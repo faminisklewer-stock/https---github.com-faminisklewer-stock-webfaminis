@@ -3165,3 +3165,361 @@ a.contact-link-card:hover {
     text-align: left;
   }
 }
+
+.home-latest-promos {
+  margin-top: 28px;
+  margin-bottom: clamp(38px, 5vw, 66px);
+}
+
+.home-latest-promos .section-heading {
+  align-items: center;
+  margin-bottom: 13px;
+}
+
+.home-latest-promos .section-heading h2 {
+  margin: 0;
+  color: #30251b;
+  font-size: clamp(22px, 2.1vw, 28px);
+  letter-spacing: -.035em;
+}
+
+.home-latest-promos .section-heading .text-link {
+  min-height: 44px;
+}
+
+.home-promo-carousel {
+  min-width: 0;
+  min-height: 260px;
+  position: relative;
+  overflow: hidden;
+  background: #e8dfd4;
+  border: 1px solid #d9cbb9;
+  border-radius: 6px;
+}
+
+.home-promo-carousel-hero {
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  border: 0;
+  border-radius: 0;
+}
+
+.home-promo-carousel-section {
+  aspect-ratio: 16 / 9;
+  min-height: 290px;
+  max-height: 520px;
+}
+
+.home-promo-carousel-slide,
+.home-promo-carousel-link {
+  position: absolute;
+  inset: 0;
+}
+
+.home-promo-carousel-slide {
+  animation: home-carousel-enter .24s ease-out;
+}
+
+.home-promo-carousel-link {
+  display: block;
+  background: #e8dfd4;
+}
+
+.home-promo-carousel-link img {
+  object-fit: cover;
+}
+
+.home-promo-carousel-link:hover img {
+  opacity: .96;
+}
+
+.home-promo-carousel-caption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 44px 20px 17px;
+  background: linear-gradient(180deg, transparent, rgba(38, 27, 18, .78));
+  color: #fff;
+}
+
+.home-promo-carousel-kicker {
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.home-promo-carousel-title {
+  max-width: min(75%, 720px);
+  overflow: hidden;
+  font-size: clamp(16px, 2.1vw, 23px);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-promo-carousel-controls {
+  position: absolute;
+  z-index: 2;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.home-promo-carousel-controls button {
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .8);
+  border-radius: 4px;
+  background: rgba(53, 37, 24, .88);
+  color: #fff;
+  cursor: pointer;
+}
+
+.home-promo-carousel-controls button:hover {
+  background: #432918;
+}
+
+.home-promo-carousel-controls button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.home-promo-carousel-controls button > span {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.home-promo-carousel-count {
+  min-width: 48px;
+  color: #fff;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .8);
+}
+
+.home-promo-carousel-controls .home-promo-carousel-toggle {
+  min-width: 52px;
+  padding-inline: 9px;
+  font-size: 11px;
+}
+
+.home-promo-carousel-empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 8px;
+  padding: clamp(18px, 4vw, 32px);
+  background: #f5ebdd;
+  color: #432918;
+}
+
+.home-promo-carousel-empty strong {
+  font-size: clamp(16px, 2vw, 21px);
+}
+
+.home-promo-carousel-empty p {
+  max-width: 460px;
+  margin: 0;
+  color: #51473d;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.site-footer .footer-main {
+  display: block;
+  padding-bottom: 28px;
+}
+
+.site-footer .footer-brand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px 36px;
+}
+
+.site-footer .footer-address {
+  max-width: min(620px, 100%);
+  margin: 0;
+  color: #f0e4d5;
+  font-size: 13px;
+  font-style: normal;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.site-footer .footer-bottom {
+  min-height: 64px;
+  justify-content: space-between;
+  gap: 14px 24px;
+}
+
+.site-footer .footer-legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+}
+
+.site-footer .footer-legal a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: #f1e7db;
+  text-underline-offset: 3px;
+}
+
+.site-footer .footer-legal a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.floating-whatsapp {
+  width: auto;
+  min-width: 56px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 12px 0 16px;
+  border-radius: 30px;
+}
+
+.floating-whatsapp span:not(.sr-only) {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.contact-store-address {
+  margin-top: 10px;
+  color: #51473d;
+  font-size: 14px;
+  font-style: normal;
+  line-height: 1.6;
+}
+
+.contact-link-mark {
+  background: #fff;
+}
+
+.contact-link-mark svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.contact-link-mark-instagram {
+  background: #fff;
+}
+
+.contact-link-mark-tiktok {
+  background: #fff;
+}
+
+.contact-link-mark-facebook {
+  background: #fff;
+}
+
+.contact-link-mark-google-maps,
+.contact-link-mark-shopee,
+.contact-link-mark-whatsapp {
+  background: #fff;
+}
+
+.contact-link-mark-telepon,
+.contact-link-mark-email {
+  color: #6b4226;
+}
+
+.contact-link-disabled .contact-link-mark svg {
+  filter: grayscale(1);
+  opacity: .58;
+}
+
+.home-promo-card,
+.home-product-showcase {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .home-latest-promos {
+    margin-top: 18px;
+    margin-bottom: 44px;
+  }
+
+  .home-promo-carousel-section {
+    min-height: 220px;
+  }
+
+  .home-promo-carousel-caption {
+    padding: 42px 14px 15px;
+  }
+
+  .home-promo-carousel-title {
+    max-width: calc(100% - 170px);
+    font-size: 15px;
+  }
+
+  .home-promo-carousel-controls {
+    right: 8px;
+    bottom: 8px;
+    gap: 5px;
+  }
+
+  .home-promo-carousel-controls button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .home-promo-carousel-count {
+    min-width: 40px;
+    font-size: 11px;
+  }
+
+  .home-promo-carousel-controls .home-promo-carousel-toggle {
+    min-width: 48px;
+    padding-inline: 6px;
+    font-size: 10px;
+  }
+
+  .site-footer .footer-brand {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 13px;
+  }
+
+  .site-footer .footer-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .site-footer .footer-legal {
+    width: 100%;
+    gap: 4px 18px;
+  }
+
+  .floating-whatsapp {
+    min-width: 52px;
+    min-height: 52px;
+    padding-inline: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-promo-carousel-slide {
+    animation: none;
+  }
+}

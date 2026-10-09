@@ -17,12 +17,14 @@ export function ImageUploader({
   initialUrl = "",
   label = "Foto utama",
   maxFileSizeMB = 5,
+  helperText,
 }: {
   bucket: ImageBucket;
   fieldName?: string;
   initialUrl?: string;
   label?: string;
   maxFileSizeMB?: number;
+  helperText?: string;
 }) {
   const inputId = useId();
   const [url, setUrl] = useState(initialUrl);
@@ -73,7 +75,9 @@ export function ImageUploader({
       <label htmlFor={inputId}>{label}</label>
       <input type="hidden" name={fieldName} value={url} />
       <input id={inputId} type="file" accept={allowedTypes.join(",")} onChange={upload} disabled={busy} />
-      <span className="upload-hint">JPEG, PNG, atau WebP. Maksimal {maxFileSizeMB} MB.</span>
+      <span className="upload-hint">
+        {helperText ? `${helperText} ` : ""}JPEG, PNG, atau WebP. Maksimal {maxFileSizeMB} MB.
+      </span>
       {url ? <a href={url} target="_blank" rel="noreferrer">Lihat foto yang tersimpan</a> : null}
       {status ? (
         <span

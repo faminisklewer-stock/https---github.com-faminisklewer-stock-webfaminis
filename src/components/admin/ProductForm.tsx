@@ -20,7 +20,6 @@ export function ProductForm({
         <p className="form-help">Nama dan kategori membantu pelanggan menemukan produk.</p>
         <div className="field-grid">
           <label className="field-label">Nama produk<input name="name" defaultValue={product?.name} required minLength={2} maxLength={180} /></label>
-          <label className="field-label">Slug URL<input name="slug" defaultValue={product?.slug} required pattern="[a-z0-9]+(-[a-z0-9]+)*" /></label>
           <label className="field-label">SKU<input name="sku" defaultValue={product?.sku} required minLength={2} maxLength={80} /></label>
           <label className="field-label">Kategori
             <select name="category_id" defaultValue={product?.category_id ?? ""} required>
@@ -29,8 +28,7 @@ export function ProductForm({
             </select>
           </label>
         </div>
-        <label className="field-label">Deskripsi singkat<textarea name="short_description" maxLength={300} defaultValue={product?.short_description ?? ""} /></label>
-        <label className="field-label">Deskripsi produk<textarea name="description" maxLength={10000} defaultValue={product?.description ?? ""} /></label>
+        <p className="form-help">Slug URL dibuat otomatis dari nama produk saat disimpan.</p>
       </fieldset>
       <fieldset className="admin-form-section">
         <legend>Harga dan stok katalog</legend>
@@ -68,7 +66,6 @@ export function ProductForm({
         <legend>Tampilan katalog</legend>
         <div className="admin-checks">
           <label><input name="is_active" type="checkbox" defaultChecked={product?.is_active ?? false} /> Tampilkan di katalog</label>
-          <label><input name="is_featured" type="checkbox" defaultChecked={product?.is_featured ?? false} /> Produk pilihan</label>
           <label><input name="is_best_seller" type="checkbox" defaultChecked={product?.is_best_seller ?? false} /> Terlaris</label>
         </div>
       </fieldset>

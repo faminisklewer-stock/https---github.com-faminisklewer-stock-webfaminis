@@ -12,8 +12,28 @@ export default async function AdminSettingsPage({
   const { supabase } = await requireAdmin();
   const params = await searchParams;
   const settingsResult = await supabase.from("site_settings")
-    .select("id, site_name, logo_url, favicon_url, whatsapp_admin_number, instagram_url, tiktok_url, facebook_url, google_maps_url, shopee_url, shop_photo_url, address, email, phone, member_program_enabled, member_discount_enabled, member_program_description, reseller_program_description, default_seo_title, default_meta_description, created_at, updated_at")
+    .select("id, site_name, logo_url, favicon_url, whatsapp_admin_number, instagram_url, tiktok_url, facebook_url, google_maps_url, shopee_url, shop_photo_url, address, store_description, email, phone, member_program_enabled, member_discount_enabled, member_program_description, reseller_program_description, default_seo_title, default_meta_description, created_at, updated_at")
     .eq("id", true).maybeSingle();
+  if (
+    settingsResult.error
+    && settingsResult.error.message.includes("store_description")
+    && /does not exist|schema cache/i.test(settingsResult.error.message)
+  ) {
+    console.error("Admin settings are unavailable until the store description migration is applied.", settingsResult.error);
+    return (
+      <main className="admin-page">
+        <AdminPageHeader
+          eyebrow="Konfigurasi toko"
+          title="Pengaturan"
+          description="Kelola kontak toko dan tautan resmi Faminis Barokah."
+        />
+        <section className="admin-state-panel" role="alert">
+          <h2>Migrasi pengaturan toko belum dijalankan</h2>
+          <p>Jalankan migrasi store_description di Supabase agar pengaturan dapat dimuat dan disimpan.</p>
+        </section>
+      </main>
+    );
+  }
   if (settingsResult.error) throw new Error(`Gagal memuat pengaturan situs: ${settingsResult.error.message}`);
   if (!settingsResult.data) throw new Error("Pengaturan situs belum dibuat. Jalankan migration Supabase.");
   const settings = settingsResult.data;
@@ -36,6 +56,7 @@ export default async function AdminSettingsPage({
               <label className="field-label">Nomor telepon<input name="phone" type="tel" defaultValue={settings.phone ?? ""} /></label>
               <label className="field-label">Email<input name="email" type="email" defaultValue={settings.email ?? ""} /></label>
               <label className="field-label">Alamat toko<textarea name="address" defaultValue={settings.address ?? ""} maxLength={500} /></label>
+              <label className="field-label">Deskripsi toko untuk halaman Kontak<textarea name="store_description" defaultValue={settings.store_description ?? ""} maxLength={1500} /></label>
             </div>
           </fieldset>
           <fieldset className="admin-form-section">

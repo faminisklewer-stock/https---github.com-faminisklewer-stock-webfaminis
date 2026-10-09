@@ -1,21 +1,16 @@
-import Image from "next/image";
 import Link from "next/link";
-import type { CatalogProduct } from "@/lib/catalog";
 import { BrandSymbol } from "@/components/BrandSymbol";
 import { CategoryCard } from "@/components/CategoryCard";
-import { HomeProductCarousel } from "@/components/HomeProductCarousel";
-import { ProductGrid } from "@/components/ProductGrid";
+import { HomePromoCarousel, HomePromoCarouselProvider, type HomePromoSlide } from "@/components/HomePromoCarousel";
 import { SeoJsonLd } from "@/components/SeoJsonLd";
-import { SectionHeading } from "@/components/SectionHeading";
-import { getCategories, getProducts } from "@/lib/catalog";
+import { getCategories } from "@/lib/catalog";
 import { getSiteSettings } from "@/lib/site-settings";
 import { siteUrl } from "@/lib/site";
+import { getPublicSupabaseClient } from "@/lib/supabase/config";
 
 const categoryOrder = ["daster", "mukena", "sarung", "gamis", "setelan", "kaftan", "sajadah", "baju-koko"];
 
-function productPhoto(products: CatalogProduct[]) {
-  return products.find((product) => !product.isSample && product.product_images[0]);
-}
+export const dynamic = "force-dynamic";
 
 function BenefitIcon({ type }: { type: "garment" | "price" | "stock" | "support" }) {
   const paths = {
@@ -33,32 +28,39 @@ function BenefitIcon({ type }: { type: "garment" | "price" | "stock" | "support"
 }
 
 export default async function HomePage() {
-  const [categories, newest, bestSellers, featured, settings] = await Promise.all([
-    getCategories(),
-    getProducts({ limit: 6 }),
-    getProducts({ bestSeller: true, sort: "terlaris", limit: 6 }),
-    getProducts({ featured: true, limit: 6 }),
-    getSiteSettings(),
-  ]);
+  const [categories, settings] = await Promise.all([getCategories(), getSiteSettings()]);
+  const supabase = getPublicSupabaseClient();
+  let promoLoadState: "ready" | "error" = "ready";
+  let promoSlides: HomePromoSlide[] = [];
+  if (!supabase) {
+    promoLoadState = "error";
+  } else {
+    const { data, error } = await supabase
+      .from("promo_cards")
+      .select("id, title, image_url, destination_url")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.error("Homepage promo carousel could not be loaded.", error);
+      promoLoadState = "error";
+    } else {
+      promoSlides = data.flatMap((promo) => promo.image_url
+        ? [{
+          id: promo.id,
+          title: promo.title,
+          imageUrl: promo.image_url,
+          destinationUrl: promo.destination_url,
+        }]
+        : []);
+    }
+  }
 
   const sortedCategories = [...categories].sort((first, second) => {
     const firstRank = categoryOrder.indexOf(first.slug);
     const secondRank = categoryOrder.indexOf(second.slug);
     return (firstRank === -1 ? categoryOrder.length : firstRank) - (secondRank === -1 ? categoryOrder.length : secondRank);
   });
-  const heroProduct = productPhoto(newest);
-  const latestProductSlides = newest.flatMap((product) => {
-    const image = product.product_images[0];
-    return !product.isSample && image
-      ? [{
-        slug: product.slug,
-        name: product.name,
-        imageUrl: image.image_url,
-        imageAlt: image.alt_text || product.name,
-      }]
-      : [];
-  });
-
   const organization = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -84,152 +86,104 @@ export default async function HomePage() {
   return (
     <>
       <SeoJsonLd data={[organization, website]} />
-      <section className="showcase-hero wrap" aria-labelledby="hero-title">
-        <div className="showcase-copy">
-          <p className="hero-kicker">Faminis Barokah</p>
-          <h1 id="hero-title">Pusat Grosir &amp; Ecer Fashion Muslim</h1>
-          <p className="hero-description">
-            Daster, mukena, sarung, gamis, dan beragam produk fashion muslim lainnya
-            untuk kebutuhan pribadi maupun usaha.
-          </p>
-          <div className="hero-actions">
-            <Link className="button button-primary" href="/produk">Lihat katalog</Link>
-            <Link className="button button-secondary" href="/kontak">Hubungi kami</Link>
+      <HomePromoCarouselProvider slides={promoSlides} loadState={promoLoadState}>
+        <section className="showcase-hero wrap" aria-labelledby="hero-title">
+          <div className="showcase-copy">
+            <p className="hero-kicker">Faminis Barokah</p>
+            <h1 id="hero-title">Pusat Grosir &amp; Ecer Fashion Muslim</h1>
+            <p className="hero-description">
+              Daster, mukena, sarung, gamis, dan beragam produk fashion muslim lainnya
+              untuk kebutuhan pribadi maupun usaha.
+            </p>
+            <div className="hero-actions">
+              <Link className="button button-primary" href="/produk">Lihat katalog</Link>
+              <Link className="button button-secondary" href="/kontak">Hubungi kami</Link>
+            </div>
           </div>
-        </div>
 
-        <div className="showcase-photo" aria-label="Foto produk Faminis Barokah">
-          {heroProduct?.product_images[0] ? (
-            <Link href={`/produk/${heroProduct.slug}`} aria-label={`Lihat ${heroProduct.name}`}>
-              <Image
-                src={heroProduct.product_images[0].image_url}
-                alt={heroProduct.product_images[0].alt_text || heroProduct.name}
-                fill
-                priority
-                sizes="(max-width: 760px) 100vw, (max-width: 1100px) 50vw, 600px"
-              />
-            </Link>
+          <div className="showcase-photo" aria-label="Promo terbaru Faminis Barokah">
+            <HomePromoCarousel placement="hero" />
+          </div>
+
+          <ul className="hero-benefits" aria-label="Cara belanja di Faminis Barokah">
+            <li><BenefitIcon type="garment" /><span><strong>Ecer maupun grosir</strong><small>Pilih sesuai kebutuhan</small></span></li>
+            <li><BenefitIcon type="price" /><span><strong>Harga jelas</strong><small>Rincian harga di setiap produk</small></span></li>
+            <li><BenefitIcon type="stock" /><span><strong>Stok dikonfirmasi</strong><small>Admin mengecek sebelum pesanan</small></span></li>
+            <li><BenefitIcon type="support" /><span><strong>Pesan lewat keranjang</strong><small>Kirim permintaan pesanan melalui WhatsApp</small></span></li>
+          </ul>
+        </section>
+
+        <section className="home-category-section wrap" aria-labelledby="category-title">
+          <h2 className="sr-only" id="category-title">Belanja berdasarkan kategori</h2>
+          {sortedCategories.length ? (
+            <div className="home-category-row">
+              {sortedCategories.slice(0, 6).map((category) => (
+                <CategoryCard category={category} key={category.id} />
+              ))}
+              <Link href="/produk" className="category-all-link">Lihat semua kategori</Link>
+            </div>
           ) : (
-            <div className="showcase-photo-placeholder">
-              <span>Foto produk Faminis</span>
-              <small>Unggah foto produk di panel admin untuk menampilkannya di sini.</small>
-            </div>
+            <p className="inline-empty">Kategori akan tampil setelah Admin mengaktifkannya.</p>
           )}
-        </div>
+        </section>
 
-        <ul className="hero-benefits" aria-label="Cara belanja di Faminis Barokah">
-          <li><BenefitIcon type="garment" /><span><strong>Ecer maupun grosir</strong><small>Pilih sesuai kebutuhan</small></span></li>
-          <li><BenefitIcon type="price" /><span><strong>Harga jelas</strong><small>Rincian harga di setiap produk</small></span></li>
-          <li><BenefitIcon type="stock" /><span><strong>Stok dikonfirmasi</strong><small>Admin mengecek sebelum pesanan</small></span></li>
-          <li><BenefitIcon type="support" /><span><strong>Pesan lewat keranjang</strong><small>Kirim permintaan pesanan melalui WhatsApp</small></span></li>
-        </ul>
-      </section>
-
-      <section className="home-category-section wrap" aria-labelledby="category-title">
-        <h2 className="sr-only" id="category-title">Belanja berdasarkan kategori</h2>
-        {sortedCategories.length ? (
-          <div className="home-category-row">
-            {sortedCategories.slice(0, 6).map((category) => (
-              <CategoryCard category={category} key={category.id} />
-            ))}
-            <Link href="/produk" className="category-all-link">Lihat semua kategori</Link>
+        <section className="home-latest-products home-latest-promos wrap" aria-labelledby="newest-title">
+          <div className="section-heading">
+            <h2 id="newest-title">Produk terbaru &amp; promo</h2>
+            <Link href="/promo" className="text-link">Lihat semua promo</Link>
           </div>
-        ) : (
-          <p className="inline-empty">Kategori akan tampil setelah Admin mengaktifkannya.</p>
-        )}
-      </section>
+          <HomePromoCarousel placement="section" />
+        </section>
 
-      <section className="home-product-showcase wrap" aria-labelledby="newest-title">
-        <aside className="home-promo-card">
-          <div className="home-promo-copy">
-            <p className="section-eyebrow">Promo</p>
-            <h2>Promo dan komunitas reseller</h2>
-            <p>Lihat informasi TikTok Live dan grup reseller Faminis.</p>
-            <Link href="/promo" className="button button-primary">Lihat promo</Link>
-          </div>
-        </aside>
-
-        <div className="home-latest-products">
-          <SectionHeading id="newest-title" title="Produk terbaru" href="/produk" />
-          <HomeProductCarousel slides={latestProductSlides} />
-        </div>
-      </section>
-
-      {bestSellers.length ? (
-        <section className="product-section section-wrap" aria-labelledby="best-title">
-          <div className="wrap">
-            <SectionHeading id="best-title" title="Produk populer" href="/produk?urut=terlaris" />
-            <ProductGrid products={bestSellers} />
+        <section className="order-flow section-wrap" aria-labelledby="order-flow-title">
+          <div className="wrap order-flow-inner">
+            <div>
+              <p className="section-eyebrow">Alur pemesanan</p>
+              <h2 id="order-flow-title">Dari katalog sampai konfirmasi Admin.</h2>
+            </div>
+            <ol className="order-flow-list">
+              <li><span className="order-step-number">01</span><strong>Pilih produk</strong><span>Tambahkan produk dan varian yang diinginkan ke keranjang.</span></li>
+              <li><span className="order-step-number">02</span><strong>Kirim pesanan</strong><span>Isi data penerima saat checkout, lalu lanjutkan ke WhatsApp.</span></li>
+              <li><span className="order-step-number">03</span><strong>Tunggu konfirmasi</strong><span>Admin memeriksa stok, total akhir, dan instruksi pembayaran.</span></li>
+            </ol>
           </div>
         </section>
-      ) : null}
 
-      {featured.length ? (
-        <section className="product-section section-wrap product-section-tint" aria-labelledby="featured-title">
-          <div className="wrap">
-            <SectionHeading id="featured-title" title="Pilihan untuk reseller" href="/produk?pilihan=reseller" />
-            <ProductGrid products={featured} />
+        <section className="faq-section section-wrap" id="faq" aria-labelledby="faq-title">
+          <div className="wrap faq-layout">
+            <aside className="faq-brand" aria-label="Faminis Barokah">
+              <BrandSymbol className="faq-brand-symbol" />
+              <span>Faminis <b>Barokah</b></span>
+              <small>Grosir &amp; Ecer Fashion Muslim</small>
+            </aside>
+            <div className="faq-content">
+              <div className="faq-heading">
+                <p className="section-eyebrow">Pertanyaan umum</p>
+                <h2 id="faq-title">Sebelum memesan</h2>
+              </div>
+              <div className="faq-list">
+                <details>
+                  <summary>Apakah bisa membeli satuan?</summary>
+                  <p>Bisa. Harga ecer tercantum pada produk yang tersedia di katalog.</p>
+                </details>
+                <details>
+                  <summary>Bagaimana mengetahui syarat harga grosir?</summary>
+                  <p>Periksa harga grosir dan jumlah minimum pada detail produk. Jika belum tercantum, tanyakan kepada Admin.</p>
+                </details>
+                <details>
+                  <summary>Apakah stok di katalog pasti tersedia?</summary>
+                  <p>Belum tentu. Admin akan memeriksa stok, motif, warna, dan ukuran sebelum pesanan diproses.</p>
+                </details>
+                <details>
+                  <summary>Kapan saya perlu membayar?</summary>
+                  <p>Tunggu konfirmasi stok, total akhir, serta instruksi pembayaran dari Admin setelah mengirim permintaan pesanan.</p>
+                </details>
+              </div>
+            </div>
           </div>
         </section>
-      ) : null}
 
-      <section className="order-flow section-wrap" aria-labelledby="order-flow-title">
-        <div className="wrap order-flow-inner">
-          <div>
-            <p className="section-eyebrow">Alur pemesanan</p>
-            <h2 id="order-flow-title">Dari katalog sampai konfirmasi Admin.</h2>
-          </div>
-          <ol className="order-flow-list">
-            <li><span className="order-step-number">01</span><strong>Pilih produk</strong><span>Tambahkan produk dan varian yang diinginkan ke keranjang.</span></li>
-            <li><span className="order-step-number">02</span><strong>Kirim pesanan</strong><span>Isi data penerima saat checkout, lalu lanjutkan ke WhatsApp.</span></li>
-            <li><span className="order-step-number">03</span><strong>Tunggu konfirmasi</strong><span>Admin memeriksa stok, total akhir, dan instruksi pembayaran.</span></li>
-          </ol>
-        </div>
-      </section>
-
-      <section className="faq-section section-wrap" id="faq" aria-labelledby="faq-title">
-        <div className="wrap faq-layout">
-          <aside className="faq-brand" aria-label="Faminis Barokah">
-            <BrandSymbol className="faq-brand-symbol" />
-            <span>Faminis <b>Barokah</b></span>
-            <small>Grosir &amp; Ecer Fashion Muslim</small>
-          </aside>
-          <div className="faq-content">
-            <div className="faq-heading">
-              <p className="section-eyebrow">Pertanyaan umum</p>
-              <h2 id="faq-title">Sebelum memesan</h2>
-            </div>
-            <div className="faq-list">
-              <details>
-                <summary>Apakah bisa membeli satuan?</summary>
-                <p>Bisa. Harga ecer tercantum pada produk yang tersedia di katalog.</p>
-              </details>
-              <details>
-                <summary>Bagaimana mengetahui syarat harga grosir?</summary>
-                <p>Periksa harga grosir dan jumlah minimum pada detail produk. Jika belum tercantum, tanyakan kepada Admin.</p>
-              </details>
-              <details>
-                <summary>Apakah stok di katalog pasti tersedia?</summary>
-                <p>Belum tentu. Admin akan memeriksa stok, motif, warna, dan ukuran sebelum pesanan diproses.</p>
-              </details>
-              <details>
-                <summary>Kapan saya perlu membayar?</summary>
-                <p>Tunggu konfirmasi stok, total akhir, serta instruksi pembayaran dari Admin setelah mengirim permintaan pesanan.</p>
-              </details>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="contact-band section-wrap" aria-labelledby="contact-title">
-        <div className="wrap contact-inner">
-          <div>
-            <p className="section-eyebrow">Perlu bantuan?</p>
-            <h2 id="contact-title">Tanyakan produk dan ketersediaannya kepada Admin.</h2>
-          </div>
-          <Link className="button button-primary" href="/kontak">Lihat informasi kontak</Link>
-        </div>
-      </section>
+      </HomePromoCarouselProvider>
     </>
   );
 }

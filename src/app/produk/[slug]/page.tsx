@@ -22,7 +22,7 @@ export async function generateMetadata({
   if (!product) return { title: "Produk tidak ditemukan", robots: { index: false, follow: false } };
 
   const title = product.seo_title || product.name;
-  const description = product.seo_description || product.short_description || `${product.name} dari Faminis Barokah. Tanyakan ketersediaan stok dan pilihan varian kepada Admin sebelum pembayaran.`;
+  const description = product.seo_description || `${product.name} tersedia di katalog Faminis Barokah. Hubungi Admin untuk detail dan konfirmasi stok.`;
   const url = product.canonical_url || `${siteUrl}/produk/${product.slug}`;
   const socialImage = product.og_image || product.product_images[0]?.image_url;
   return {
@@ -45,6 +45,7 @@ export default async function ProductDetailPage({
 
   const categoryUrl = `${siteUrl}/${product.categories?.slug ?? "produk"}`;
   const productUrl = `${siteUrl}/produk/${product.slug}`;
+  const productDescription = product.seo_description || `${product.name} tersedia di katalog Faminis Barokah. Hubungi Admin untuk detail dan konfirmasi stok.`;
   const stockLabel = {
     AVAILABLE: "Tersedia menurut katalog",
     LOW_STOCK: "Stok menipis menurut katalog",
@@ -57,7 +58,7 @@ export default async function ProductDetailPage({
       "@context": "https://schema.org",
       "@type": "Product",
       name: product.name,
-      description: product.seo_description || product.short_description || product.description || product.name,
+      description: productDescription,
       sku: product.sku,
       brand: { "@type": "Brand", name: "Faminis Barokah" },
       image: product.product_images.map((image) => image.image_url),
@@ -154,10 +155,6 @@ export default async function ProductDetailPage({
             className="button-secondary button-wide"
           />
           <ShareProductButton name={product.name} url={productUrl} />
-          <section className="product-description">
-            <h2>Deskripsi produk</h2>
-            {product.description ? <p>{product.description}</p> : <p>Informasi produk belum ditambahkan. Tanyakan detail bahan, motif, ukuran, dan warna kepada Admin.</p>}
-          </section>
         </div>
       </div>
     </div>

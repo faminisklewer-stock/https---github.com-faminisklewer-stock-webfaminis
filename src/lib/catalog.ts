@@ -2,7 +2,7 @@ import { getPublicSupabaseClient } from "@/lib/supabase/config";
 import type { Category, Product, ProductImage, ProductVariant } from "@/types/database";
 
 const productSelection =
-  "id, category_id, name, slug, sku, short_description, description, ecer_price, grosir_price, grosir_min_qty, stock, stock_status, is_active, is_featured, is_best_seller, seo_title, seo_description, focus_keyword, canonical_url, og_image, created_at, updated_at";
+  "id, category_id, name, slug, sku, ecer_price, grosir_price, grosir_min_qty, stock, stock_status, is_active, is_featured, is_best_seller, seo_title, seo_description, focus_keyword, canonical_url, og_image, created_at, updated_at";
 
 const SAMPLE_DATE = "2026-10-09T00:00:00.000Z";
 const SAMPLE_IMAGE = "/images/sample-daster.svg";
@@ -26,8 +26,6 @@ const FALLBACK_PRODUCT: CatalogProduct = {
   name: "Contoh Produk Daster",
   slug: "contoh-produk-daster",
   sku: "CONTOH-DAS-001",
-  short_description: "Contoh tampilan katalog. Ganti foto, harga, dan keterangan dengan data produk sebenarnya.",
-  description: "Produk ini hanya contoh tampilan. Hubungkan Supabase dan masukkan informasi resmi sebelum menerima pesanan.",
   ecer_price: 65000,
   grosir_price: 55000,
   grosir_min_qty: 12,
@@ -58,7 +56,7 @@ const FALLBACK_PRODUCT: CatalogProduct = {
   ],
 };
 
-export type CatalogProduct = Product & {
+export type CatalogProduct = Omit<Product, "short_description" | "description"> & {
   categories: Pick<Category, "name" | "slug"> | null;
   product_images: ProductImage[];
   product_variants: ProductVariant[];
@@ -111,7 +109,7 @@ export async function getProducts(options: {
       if (options.stockStatus && product.stock_status !== options.stockStatus) return false;
       if (options.search) {
         const term = options.search.trim().toLocaleLowerCase("id-ID");
-        if (!`${product.name} ${product.sku} ${product.description}`.toLocaleLowerCase("id-ID").includes(term)) return false;
+        if (!`${product.name} ${product.sku}`.toLocaleLowerCase("id-ID").includes(term)) return false;
       }
       return true;
     });
@@ -131,7 +129,7 @@ export async function getProducts(options: {
   if (options.bestSeller) query = query.eq("is_best_seller", true);
   if (options.search) {
     const term = options.search.replace(/[^\p{L}\p{N}\s-]/gu, " ").trim();
-    if (term) query = query.or(`name.ilike.%${term}%,sku.ilike.%${term}%,description.ilike.%${term}%`);
+    if (term) query = query.or(`name.ilike.%${term}%,sku.ilike.%${term}%`);
   }
   if (options.minPrice !== undefined) query = query.gte("ecer_price", options.minPrice);
   if (options.maxPrice !== undefined) query = query.lte("ecer_price", options.maxPrice);

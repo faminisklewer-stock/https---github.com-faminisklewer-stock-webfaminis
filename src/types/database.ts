@@ -101,6 +101,7 @@ export type SiteSettings = {
   google_maps_url: string | null;
   shopee_url: string | null;
   shop_photo_url: string | null;
+  store_description: string | null;
   promo_tiktok_url: string | null;
   promo_tiktok_image_url: string | null;
   promo_reseller_image_url: string | null;

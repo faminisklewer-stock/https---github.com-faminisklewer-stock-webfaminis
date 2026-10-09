@@ -8,11 +8,8 @@ import { requireAdmin } from "@/lib/admin";
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const productSchema = z.object({
   name: z.string().trim().min(2).max(180),
-  slug: z.string().trim().regex(slugPattern),
   sku: z.string().trim().min(2).max(80),
   category_id: z.string().uuid(),
-  short_description: z.string().trim().max(300).optional(),
-  description: z.string().trim().max(10000).optional(),
   ecer_price: z.coerce.number().min(0),
   grosir_price: z.union([z.number().min(0), z.null()]),
   grosir_min_qty: z.coerce.number().int().min(1).max(99),
@@ -25,18 +22,14 @@ const productSchema = z.object({
   canonical_url: z.union([z.string().url().max(2048), z.literal("")]).optional(),
   og_image: z.union([z.string().url().max(2048), z.literal("")]).optional(),
   is_active: z.boolean(),
-  is_featured: z.boolean(),
   is_best_seller: z.boolean(),
 });
 
 function readProductForm(formData: FormData) {
   return productSchema.safeParse({
     name: formData.get("name"),
-    slug: formData.get("slug"),
     sku: formData.get("sku"),
     category_id: formData.get("category_id"),
-    short_description: formData.get("short_description") || "",
-    description: formData.get("description") || "",
     ecer_price: formData.get("ecer_price"),
     grosir_price: formData.get("grosir_price")?.toString().trim()
       ? Number(formData.get("grosir_price"))
@@ -51,9 +44,41 @@ function readProductForm(formData: FormData) {
     canonical_url: formData.get("canonical_url") || "",
     og_image: formData.get("og_image") || "",
     is_active: formData.get("is_active") === "on",
-    is_featured: formData.get("is_featured") === "on",
     is_best_seller: formData.get("is_best_seller") === "on",
   });
+}
+
+type AdminSupabase = Awaited<ReturnType<typeof requireAdmin>>["supabase"];
+
+async function createUniqueProductSlug(
+  supabase: AdminSupabase,
+  name: string,
+  excludeProductId: string | undefined,
+  errorPath: string,
+) {
+  const baseSlug = name
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 160)
+    .replace(/-$/g, "") || "produk";
+  let candidate = baseSlug;
+  let suffix = 2;
+
+  while (true) {
+    let query = supabase.from("products").select("id").eq("slug", candidate).limit(1);
+    if (excludeProductId) query = query.neq("id", excludeProductId);
+    const { data, error } = await query.maybeSingle();
+    if (error) {
+      console.error("Admin could not check product slug availability.", error);
+      redirect(`${errorPath}?error=save`);
+    }
+    if (!data) return candidate;
+    candidate = `${baseSlug}-${suffix}`;
+    suffix += 1;
+  }
 }
 
 export async function createProduct(formData: FormData) {
@@ -61,19 +86,17 @@ export async function createProduct(formData: FormData) {
   const parsed = readProductForm(formData);
   if (!parsed.success) redirect("/admin/products?error=invalid");
   const values = parsed.data;
+  const slug = await createUniqueProductSlug(supabase, values.name, undefined, "/admin/products");
   const { data: product, error } = await supabase.from("products").insert({
     name: values.name,
-    slug: values.slug,
+    slug,
     sku: values.sku,
     category_id: values.category_id,
-    short_description: values.short_description || null,
-    description: values.description || null,
     ecer_price: values.ecer_price,
     grosir_price: values.grosir_price,
     grosir_min_qty: values.grosir_min_qty,
     stock_status: values.stock_status,
     is_active: values.is_active,
-    is_featured: values.is_featured,
     is_best_seller: values.is_best_seller,
     seo_title: values.seo_title || null,
     seo_description: values.seo_description || null,
@@ -100,6 +123,7 @@ export async function createProduct(formData: FormData) {
   }
   revalidatePath("/");
   revalidatePath("/produk");
+  revalidatePath("/produk/[slug]", "page");
   redirect("/admin/products?success=created");
 }
 
@@ -109,19 +133,17 @@ export async function updateProduct(formData: FormData) {
   const parsed = readProductForm(formData);
   if (!id.success || !parsed.success) redirect("/admin/products?error=invalid");
   const values = parsed.data;
+  const slug = await createUniqueProductSlug(supabase, values.name, id.data, `/admin/products/${id.data}`);
   const { error } = await supabase.from("products").update({
     name: values.name,
-    slug: values.slug,
+    slug,
     sku: values.sku,
     category_id: values.category_id,
-    short_description: values.short_description || null,
-    description: values.description || null,
     ecer_price: values.ecer_price,
     grosir_price: values.grosir_price,
     grosir_min_qty: values.grosir_min_qty,
     stock_status: values.stock_status,
     is_active: values.is_active,
-    is_featured: values.is_featured,
     is_best_seller: values.is_best_seller,
     seo_title: values.seo_title || null,
     seo_description: values.seo_description || null,
@@ -160,7 +182,7 @@ export async function updateProduct(formData: FormData) {
   }
   revalidatePath("/");
   revalidatePath("/produk");
-  revalidatePath(`/produk/${values.slug}`);
+  revalidatePath("/produk/[slug]", "page");
   redirect("/admin/products?success=updated");
 }
 
@@ -435,7 +457,7 @@ export async function deleteMemberDiscount(formData: FormData) {
 }
 
 const promoDestinationUrl = z.string().url().max(2048).refine((value) => value.startsWith("https://"));
-const promoImageUrl = z.union([promoDestinationUrl, z.literal("")]);
+const promoImageUrl = z.string().url().max(2048).refine((value) => value.startsWith("https://"));
 const promoCardSchema = z.object({
   title: z.string().trim().min(2).max(160),
   description: z.string().trim().max(1000),
@@ -463,12 +485,12 @@ export async function createPromoCard(formData: FormData) {
   const { error } = await supabase.from("promo_cards").insert({
     ...parsed.data,
     description: parsed.data.description || null,
-    image_url: parsed.data.image_url || null,
   });
   if (error) {
     console.error("Admin could not create promo card.", error);
     redirect("/admin/promos?error=save");
   }
+  revalidatePath("/");
   revalidatePath("/promo");
   redirect("/admin/promos?success=created");
 }
@@ -481,12 +503,12 @@ export async function updatePromoCard(formData: FormData) {
   const { error } = await supabase.from("promo_cards").update({
     ...parsed.data,
     description: parsed.data.description || null,
-    image_url: parsed.data.image_url || null,
   }).eq("id", id.data);
   if (error) {
     console.error("Admin could not update promo card.", error);
     redirect("/admin/promos?error=save");
   }
+  revalidatePath("/");
   revalidatePath("/promo");
   redirect("/admin/promos?success=updated");
 }
@@ -500,6 +522,7 @@ export async function deletePromoCard(formData: FormData) {
     console.error("Admin could not delete promo card.", error);
     redirect("/admin/promos?error=delete");
   }
+  revalidatePath("/");
   revalidatePath("/promo");
   redirect("/admin/promos?success=deleted");
 }
@@ -513,6 +536,7 @@ export async function updateSiteSettings(formData: FormData) {
       return digits.length >= 10 && digits.length <= 15;
     }),
     address: z.string().trim().max(500),
+    store_description: z.string().trim().max(1500),
     email: z.union([z.string().trim().email().max(254), z.literal("")]),
     phone: z.string().trim().max(22),
     instagram_url: httpsUrl,
@@ -525,6 +549,7 @@ export async function updateSiteSettings(formData: FormData) {
   const parsed = settingsSchema.safeParse({
     whatsapp_admin_number: formData.get("whatsapp_admin_number"),
     address: formData.get("address") || "",
+    store_description: formData.get("store_description") || "",
     email: formData.get("email") || "",
     phone: formData.get("phone") || "",
     instagram_url: formData.get("instagram_url") || "",
@@ -538,6 +563,7 @@ export async function updateSiteSettings(formData: FormData) {
   const { error } = await supabase.from("site_settings").update({
     whatsapp_admin_number: parsed.data.whatsapp_admin_number,
     address: parsed.data.address || null,
+    store_description: parsed.data.store_description || null,
     email: parsed.data.email || null,
     phone: parsed.data.phone || null,
     instagram_url: parsed.data.instagram_url || null,

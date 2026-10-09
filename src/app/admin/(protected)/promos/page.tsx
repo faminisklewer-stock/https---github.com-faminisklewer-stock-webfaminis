@@ -23,8 +23,8 @@ export default async function AdminPromosPage({
       <main className="admin-page">
         <AdminPageHeader
           eyebrow="Konten publik"
-          title="Promo"
-          description="Buat, perbarui, atau sembunyikan kartu yang tampil pada halaman Promo."
+          title="Promo dan carousel Beranda"
+          description="Kelola gambar, tujuan tautan, dan urutan slide yang tampil di dua carousel Beranda serta halaman Promo."
         />
         <section className="admin-state-panel" role="alert">
           <h2>Daftar promo belum dapat dimuat</h2>
@@ -41,23 +41,29 @@ export default async function AdminPromosPage({
     <main className="admin-page">
       <AdminPageHeader
         eyebrow="Konten publik"
-        title="Promo"
-        description="Buat, perbarui, atau sembunyikan kartu yang tampil pada halaman Promo."
+        title="Promo dan carousel Beranda"
+        description="Setiap promo aktif dengan gambar tampil pada carousel Beranda dan halaman Promo."
       />
       <AdminFeedback searchParams={params} />
       <section className="admin-settings-panel admin-promo-create">
         <form action={createPromoCard} className="admin-form">
           <fieldset className="admin-form-section">
-            <legend>Tambah promo</legend>
+            <legend>Tambah promo dan slide Beranda</legend>
             <div className="field-grid">
               <label className="field-label">Judul promo<input name="title" required minLength={2} maxLength={160} /></label>
               <label className="field-label">Tautan tujuan HTTPS<input name="destination_url" type="url" placeholder="https://..." required /></label>
               <label className="field-label">Urutan tampil<input name="sort_order" type="number" defaultValue={0} min={-100000} max={100000} required /></label>
             </div>
             <label className="field-label">Keterangan<textarea name="description" maxLength={1000} /></label>
-            <ImageUploader bucket="site-assets" fieldName="image_url" label="Gambar promo (opsional)" maxFileSizeMB={5} />
+            <ImageUploader
+              bucket="site-assets"
+              fieldName="image_url"
+              label="Gambar promo dan carousel (wajib)"
+              maxFileSizeMB={5}
+              helperText="Gunakan gambar 1600 x 900 px (rasio 16:9). Gambar akan dipotong agar pas di carousel Beranda."
+            />
             <div className="admin-form-actions">
-              <label className="check-label"><input type="checkbox" name="is_active" defaultChecked /> Tampilkan di halaman Promo</label>
+              <label className="check-label"><input type="checkbox" name="is_active" defaultChecked /> Tampilkan di Beranda dan halaman Promo</label>
               <button className="button button-primary" type="submit">Tambah promo</button>
             </div>
           </fieldset>
@@ -87,9 +93,16 @@ export default async function AdminPromosPage({
                     <label className="field-label">Urutan tampil<input name="sort_order" type="number" defaultValue={promo.sort_order} min={-100000} max={100000} required /></label>
                   </div>
                   <label className="field-label">Keterangan<textarea name="description" defaultValue={promo.description ?? ""} maxLength={1000} /></label>
-                  <ImageUploader bucket="site-assets" fieldName="image_url" initialUrl={promo.image_url ?? ""} label="Gambar promo (opsional)" maxFileSizeMB={5} />
+                  <ImageUploader
+                    bucket="site-assets"
+                    fieldName="image_url"
+                    initialUrl={promo.image_url ?? ""}
+                    label="Gambar promo dan carousel (wajib)"
+                    maxFileSizeMB={5}
+                    helperText="Gunakan gambar 1600 x 900 px (rasio 16:9). Gambar akan dipotong agar pas di carousel Beranda."
+                  />
                   <div className="admin-form-actions">
-                    <label className="check-label"><input type="checkbox" name="is_active" defaultChecked={promo.is_active} /> Tampilkan di halaman Promo</label>
+                    <label className="check-label"><input type="checkbox" name="is_active" defaultChecked={promo.is_active} /> Tampilkan di Beranda dan halaman Promo</label>
                     <button className="button button-secondary" type="submit">Simpan perubahan</button>
                   </div>
                 </form>
