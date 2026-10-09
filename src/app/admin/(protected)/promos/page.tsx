@@ -23,12 +23,12 @@ export default async function AdminPromosPage({
       <main className="admin-page">
         <AdminPageHeader
           eyebrow="Konten publik"
-          title="Promo dan carousel Beranda"
-          description="Kelola gambar, tujuan tautan, dan urutan slide yang tampil di dua carousel Beranda serta halaman Promo."
+          title="Promo"
+          description="Kelola daftar promo yang ditampilkan pada halaman Promo. Carousel Beranda dikelola terpisah."
         />
         <section className="admin-state-panel" role="alert">
           <h2>Daftar promo belum dapat dimuat</h2>
-          <p>Pastikan migrasi promo terbaru sudah dijalankan di Supabase, lalu muat ulang halaman ini.</p>
+          <p>Pastikan migrasi Promo sudah dijalankan di Supabase, lalu muat ulang halaman ini.</p>
           <form action="/admin/promos" method="get">
             <button className="button button-secondary" type="submit">Muat ulang</button>
           </form>
@@ -41,14 +41,14 @@ export default async function AdminPromosPage({
     <main className="admin-page">
       <AdminPageHeader
         eyebrow="Konten publik"
-        title="Promo dan carousel Beranda"
-        description="Setiap promo aktif dengan gambar tampil pada carousel Beranda dan halaman Promo."
+        title="Promo"
+        description="Kelola daftar promo yang ditampilkan pada halaman Promo. Carousel Beranda dikelola terpisah."
       />
       <AdminFeedback searchParams={params} />
       <section className="admin-settings-panel admin-promo-create">
         <form action={createPromoCard} className="admin-form">
           <fieldset className="admin-form-section">
-            <legend>Tambah promo dan slide Beranda</legend>
+            <legend>Tambah promo</legend>
             <div className="field-grid">
               <label className="field-label">Judul promo<input name="title" required minLength={2} maxLength={160} /></label>
               <label className="field-label">Tautan tujuan HTTPS<input name="destination_url" type="url" placeholder="https://..." required /></label>
@@ -58,12 +58,12 @@ export default async function AdminPromosPage({
             <ImageUploader
               bucket="site-assets"
               fieldName="image_url"
-              label="Gambar promo dan carousel (wajib)"
+              label="Gambar promo (wajib)"
               maxFileSizeMB={5}
-              helperText="Gunakan gambar 1600 x 900 px (rasio 16:9). Gambar akan dipotong agar pas di carousel Beranda."
+              helperText="Gambar ini hanya ditampilkan pada halaman Promo."
             />
             <div className="admin-form-actions">
-              <label className="check-label"><input type="checkbox" name="is_active" defaultChecked /> Tampilkan di Beranda dan halaman Promo</label>
+              <label className="check-label"><input type="checkbox" name="is_active" defaultChecked /> Tampilkan di halaman Promo</label>
               <button className="button button-primary" type="submit">Tambah promo</button>
             </div>
           </fieldset>
@@ -97,12 +97,12 @@ export default async function AdminPromosPage({
                     bucket="site-assets"
                     fieldName="image_url"
                     initialUrl={promo.image_url ?? ""}
-                    label="Gambar promo dan carousel (wajib)"
+                    label="Gambar promo (wajib)"
                     maxFileSizeMB={5}
-                    helperText="Gunakan gambar 1600 x 900 px (rasio 16:9). Gambar akan dipotong agar pas di carousel Beranda."
+                    helperText="Gambar ini hanya ditampilkan pada halaman Promo."
                   />
                   <div className="admin-form-actions">
-                    <label className="check-label"><input type="checkbox" name="is_active" defaultChecked={promo.is_active} /> Tampilkan di Beranda dan halaman Promo</label>
+                    <label className="check-label"><input type="checkbox" name="is_active" defaultChecked={promo.is_active} /> Tampilkan di halaman Promo</label>
                     <button className="button button-secondary" type="submit">Simpan perubahan</button>
                   </div>
                 </form>
@@ -119,7 +119,7 @@ export default async function AdminPromosPage({
       ) : (
         <section className="admin-state-panel">
           <h2>Belum ada promo tersimpan</h2>
-          <p>Tambahkan promo di formulir atas. Promo aktif akan muncul pada halaman publik.</p>
+          <p>Tambahkan promo di formulir atas. Promo aktif akan muncul di halaman Promo.</p>
         </section>
       )}
       {(promos?.length ?? 0) >= 200 ? <p className="admin-data-note">Daftar dibatasi hingga 200 promo.</p> : null}

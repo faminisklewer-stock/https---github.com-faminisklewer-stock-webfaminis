@@ -215,6 +215,17 @@ export type PromoCard = {
   updated_at: string;
 };
 
+export type HomeCarouselSlide = {
+  id: string;
+  title: string;
+  image_url: string;
+  destination_url: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 type SeoPage = {
   id: string;
   page_path: string;
@@ -273,6 +284,7 @@ export type Database = {
       promotions: Table<Promotion>;
       banners: Table<Banner>;
       promo_cards: Table<PromoCard>;
+      home_carousel_slides: Table<HomeCarouselSlide>;
       seo_pages: Table<SeoPage>;
     };
     Views: {

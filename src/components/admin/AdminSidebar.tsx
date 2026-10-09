@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 const adminLinks = [
   ["Produk", "/admin/products"],
   ["Kategori", "/admin/categories"],
+  ["Carousel Beranda", "/admin/home-carousel"],
   ["Promo", "/admin/promos"],
   ["Pengaturan", "/admin/settings"],
 ];

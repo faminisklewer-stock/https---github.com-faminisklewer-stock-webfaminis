@@ -36,7 +36,7 @@ export default async function HomePage() {
     promoLoadState = "error";
   } else {
     const { data, error } = await supabase
-      .from("promo_cards")
+      .from("home_carousel_slides")
       .select("id, title, image_url, destination_url")
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
