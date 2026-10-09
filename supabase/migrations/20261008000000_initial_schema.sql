@@ -744,6 +744,14 @@ create policy "Public reads storefront settings"
   on public.site_settings for select to anon, authenticated
   using (id = true);
 
+alter table public.site_settings
+  add column if not exists google_maps_url text,
+  add column if not exists shopee_url text,
+  add column if not exists shop_photo_url text,
+  add column if not exists promo_tiktok_url text,
+  add column if not exists promo_tiktok_image_url text,
+  add column if not exists promo_reseller_image_url text;
+
 create or replace view public.public_site_settings
 with (security_invoker = true)
 as
@@ -752,7 +760,9 @@ select
   instagram_url, tiktok_url, facebook_url, address, email, phone,
   member_program_enabled, member_discount_enabled,
   member_program_description, reseller_program_description,
-  default_seo_title, default_meta_description, created_at, updated_at
+  default_seo_title, default_meta_description, created_at, updated_at,
+  reseller_whatsapp_group_url, google_maps_url, shopee_url, shop_photo_url,
+  promo_tiktok_url, promo_tiktok_image_url, promo_reseller_image_url
 from public.site_settings
 where id = true;
 
