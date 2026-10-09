@@ -1443,8 +1443,10 @@ body {
 }
 .showcase-photo {
   min-width: 0;
-  min-height: 268px;
+  min-height: 0;
   position: relative;
+  align-self: center;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   background: #e4d5c3;
 }
@@ -2203,7 +2205,7 @@ body {
   .showcase-copy .hero-description { max-width: 470px; font-size: 13px; }
   .showcase-copy .hero-actions { width: 100%; gap: 8px; }
   .showcase-copy .hero-actions .button { flex: 1 1 130px; }
-  .showcase-photo { min-height: 210px; aspect-ratio: 1.45; }
+  .showcase-photo { min-height: 0; aspect-ratio: 16 / 9; }
   .hero-benefits {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3198,17 +3200,19 @@ a.contact-link-card:hover {
 }
 
 .home-promo-carousel-hero {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  min-height: inherit;
+  min-height: 0;
   border: 0;
   border-radius: 0;
 }
 
 .home-promo-carousel-section {
+  width: 100%;
   aspect-ratio: 16 / 9;
-  min-height: 290px;
-  max-height: 520px;
+  min-height: 0;
 }
 
 .home-promo-carousel-slide,
@@ -3459,7 +3463,7 @@ a.contact-link-card:hover {
   }
 
   .home-promo-carousel-section {
-    min-height: 220px;
+    min-height: 0;
   }
 
   .home-promo-carousel-caption {
