@@ -1,0 +1,16 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^npx create-next-app@latest \\. --typescript --tailwind --eslint --app --src-dir --import-alias \"@/\\*\" --use-npm --yes$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^npx create-next-app@latest --help$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^npx create-next-app@latest faminis-barokah --typescript --tailwind --eslint --app --src-dir --import-alias \"@/\\*\" --use-npm --disable-git --yes$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

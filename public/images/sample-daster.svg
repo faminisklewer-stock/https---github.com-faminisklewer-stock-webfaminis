@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 960" role="img" aria-labelledby="title description">
+  <title id="title">Ilustrasi contoh produk daster</title>
+  <desc id="description">Ilustrasi tunik sederhana berwarna cokelat di atas latar krem.</desc>
+  <rect width="800" height="960" fill="#f5ebdd"/>
+  <circle cx="400" cy="370" r="260" fill="#ead8c2"/>
+  <path d="M290 210 350 175h100l60 35 105 95-72 85-55-49v371H312V341l-55 49-72-85z" fill="#6b4226"/>
+  <path d="m350 175 50 58 50-58M400 233v479" fill="none" stroke="#f5ebdd" stroke-linecap="round" stroke-linejoin="round" stroke-width="12"/>
+  <path d="M335 370h130" fill="none" stroke="#f5ebdd" stroke-linecap="round" stroke-width="10"/>
+  <rect x="222" y="770" width="356" height="54" rx="27" fill="#432918"/>
+  <text x="400" y="805" fill="#fff" font-family="Arial, sans-serif" font-size="23" text-anchor="middle">ILUSTRASI PRODUK CONTOH</text>
+</svg>
