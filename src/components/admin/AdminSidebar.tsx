@@ -5,10 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const adminLinks = [
-  ["Ringkasan", "/admin"],
   ["Produk", "/admin/products"],
   ["Kategori", "/admin/categories"],
-  ["Pesanan", "/admin/orders"],
+  ["Promo", "/admin/promos"],
   ["Pengaturan", "/admin/settings"],
 ];
 
@@ -17,7 +16,7 @@ export function AdminSidebar({ name }: { name: string }) {
 
   return (
     <aside className="admin-sidebar">
-      <Link href="/admin" className="admin-brand">
+      <Link href="/admin/products" className="admin-brand">
         <BrandSymbol />
         <span>Faminis <b>Barokah</b><small>Panel Admin</small></span>
       </Link>

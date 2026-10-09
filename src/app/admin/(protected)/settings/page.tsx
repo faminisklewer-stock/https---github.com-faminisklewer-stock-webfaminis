@@ -11,23 +11,19 @@ export default async function AdminSettingsPage({
 }) {
   const { supabase } = await requireAdmin();
   const params = await searchParams;
-  const [settingsResult, groupUrlResult] = await Promise.all([
-    supabase.from("site_settings")
-      .select("id, site_name, logo_url, favicon_url, whatsapp_admin_number, instagram_url, tiktok_url, facebook_url, google_maps_url, shopee_url, shop_photo_url, promo_tiktok_url, promo_tiktok_image_url, promo_reseller_image_url, address, email, phone, member_program_enabled, member_discount_enabled, member_program_description, reseller_program_description, default_seo_title, default_meta_description, created_at, updated_at")
-      .eq("id", true).maybeSingle(),
-    supabase.rpc("get_admin_reseller_group_url"),
-  ]);
+  const settingsResult = await supabase.from("site_settings")
+    .select("id, site_name, logo_url, favicon_url, whatsapp_admin_number, instagram_url, tiktok_url, facebook_url, google_maps_url, shopee_url, shop_photo_url, address, email, phone, member_program_enabled, member_discount_enabled, member_program_description, reseller_program_description, default_seo_title, default_meta_description, created_at, updated_at")
+    .eq("id", true).maybeSingle();
   if (settingsResult.error) throw new Error(`Gagal memuat pengaturan situs: ${settingsResult.error.message}`);
-  if (groupUrlResult.error) throw new Error(`Gagal memuat tautan grup reseller: ${groupUrlResult.error.message}`);
   if (!settingsResult.data) throw new Error("Pengaturan situs belum dibuat. Jalankan migration Supabase.");
-  const settings = { ...settingsResult.data, reseller_whatsapp_group_url: groupUrlResult.data };
+  const settings = settingsResult.data;
 
   return (
     <main className="admin-page">
       <AdminPageHeader
         eyebrow="Konfigurasi toko"
         title="Pengaturan"
-        description="Kelola kontak yang digunakan pelanggan dan tautan resmi Faminis Barokah."
+        description="Kelola kontak toko dan tautan resmi Faminis Barokah."
       />
       <AdminFeedback searchParams={params} />
       <section className="admin-settings-panel">
@@ -49,18 +45,6 @@ export default async function AdminSettingsPage({
             <div className="field-grid">
               <label className="field-label">Google Maps<input name="google_maps_url" type="url" defaultValue={settings.google_maps_url ?? ""} placeholder="https://maps.google.com/..." /></label>
               <label className="field-label">Shopee<input name="shopee_url" type="url" defaultValue={settings.shopee_url ?? ""} placeholder="https://shopee.co.id/..." /></label>
-            </div>
-          </fieldset>
-          <fieldset className="admin-form-section">
-            <legend>Promo</legend>
-            <p className="form-help">Undangan grup reseller akan terlihat untuk semua pengunjung di halaman Promo. Gunakan tautan HTTPS yang memang boleh dibagikan publik.</p>
-            <label className="field-label">Tautan Promo TikTok Live<input name="promo_tiktok_url" type="url" defaultValue={settings.promo_tiktok_url ?? ""} placeholder="https://www.tiktok.com/..." /></label>
-            <label className="field-label">Link grup WhatsApp reseller
-              <input name="reseller_whatsapp_group_url" type="url" defaultValue={settings.reseller_whatsapp_group_url ?? ""} placeholder="https://chat.whatsapp.com/..." />
-            </label>
-            <div className="field-grid">
-              <ImageUploader bucket="site-assets" fieldName="promo_tiktok_image_url" initialUrl={settings.promo_tiktok_image_url ?? ""} label="Gambar Promo TikTok Live" maxFileSizeMB={5} />
-              <ImageUploader bucket="site-assets" fieldName="promo_reseller_image_url" initialUrl={settings.promo_reseller_image_url ?? ""} label="Gambar grup reseller" maxFileSizeMB={5} />
             </div>
           </fieldset>
           <fieldset className="admin-form-section">

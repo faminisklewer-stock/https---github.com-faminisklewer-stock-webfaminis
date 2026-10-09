@@ -14,8 +14,6 @@ export function AdminFeedback({
           ? "Produk tersimpan, tetapi foto belum tersimpan. Coba unggah kembali."
         : error === "variant"
           ? "Varian belum tersimpan. Periksa SKU, nilai harga, dan koneksi."
-          : error === "transition"
-            ? "Status pesanan tidak dapat dilanjutkan dari tahap saat ini. Muat ulang daftar dan periksa kembali."
           : "Perubahan belum tersimpan. Coba lagi atau periksa koneksi.";
     return <p className="form-error admin-feedback" role="alert">{message}</p>;
   }

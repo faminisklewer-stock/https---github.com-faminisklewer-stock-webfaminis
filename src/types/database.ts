@@ -134,51 +134,6 @@ type Profile = {
   updated_at: string;
 };
 
-export type Order = {
-  id: string;
-  order_number: string;
-  user_id: string | null;
-  customer_name: string;
-  customer_phone: string;
-  customer_email: string | null;
-  address: string;
-  district: string;
-  city: string;
-  province: string;
-  postal_code: string;
-  notes: string | null;
-  subtotal: number;
-  discount: number;
-  shipping_cost: number;
-  grand_total: number;
-  status:
-    | "DRAFT"
-    | "WAITING_STOCK_CONFIRMATION"
-    | "STOCK_CONFIRMED"
-    | "WAITING_PAYMENT"
-    | "PAID"
-    | "PROCESSING"
-    | "SHIPPED"
-    | "COMPLETED"
-    | "CANCELLED";
-  created_at: string;
-  updated_at: string;
-};
-
-type OrderItem = {
-  id: string;
-  order_id: string;
-  product_id: string;
-  variant_id: string | null;
-  product_name_snapshot: string;
-  variant_snapshot: string | null;
-  price_type: "ECER" | "GROSIR" | "MEMBER";
-  unit_price: number;
-  quantity: number;
-  subtotal: number;
-  created_at: string;
-};
-
 type MemberDiscount = {
   id: string;
   name: string;
@@ -247,6 +202,18 @@ type Banner = {
   updated_at: string;
 };
 
+export type PromoCard = {
+  id: string;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  destination_url: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 type SeoPage = {
   id: string;
   page_path: string;
@@ -297,8 +264,6 @@ export type Database = {
       product_variants: Table<ProductVariant>;
       product_images: Table<ProductImage>;
       profiles: Table<Profile>;
-      orders: Table<Order>;
-      order_items: Table<OrderItem>;
       member_discounts: Table<MemberDiscount>;
       site_settings: Table<SiteSettings>;
       carts: Table<Cart>;
@@ -306,6 +271,7 @@ export type Database = {
       favorites: Table<Favorite>;
       promotions: Table<Promotion>;
       banners: Table<Banner>;
+      promo_cards: Table<PromoCard>;
       seo_pages: Table<SeoPage>;
     };
     Views: {
@@ -315,21 +281,6 @@ export type Database = {
       };
     };
     Functions: {
-      create_order_request: {
-        Args: {
-          p_customer_name: string;
-          p_customer_phone: string;
-          p_customer_email: string | null;
-          p_address: string;
-          p_district: string;
-          p_city: string;
-          p_province: string;
-          p_postal_code: string;
-          p_notes: string | null;
-          p_items: Json;
-        };
-        Returns: Json;
-      };
       get_reseller_group_url: { Args: Record<string, never>; Returns: string };
       get_admin_reseller_group_url: { Args: Record<string, never>; Returns: string | null };
     };

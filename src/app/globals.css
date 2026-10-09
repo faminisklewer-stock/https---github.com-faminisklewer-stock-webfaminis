@@ -592,6 +592,11 @@ img { max-width: 100%; }
 .form-error { padding: 12px; color: #6a2d1c; background: #f8e8df; border: 1px solid #bb7458; }
 .form-success { padding: 12px; color: #344619; background: #edf2df; border: 1px solid #788f4a; }
 .checkout-form { display: grid; gap: 21px; }
+.checkout-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 820px);
+  margin-top: 29px;
+}
 .checkout-form textarea { min-height: 92px; resize: vertical; }
 .checkout-line { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
 .checkout-disclaimer { padding: 15px; background: var(--cream); color: #3f3429; font-size: 13px; }
@@ -899,6 +904,7 @@ img { max-width: 100%; }
   .detail-price { margin-top: 16px; }
   .detail-price strong { font-size: 25px; }
   .cart-layout { grid-template-columns: 1fr; gap: 20px; margin-top: 21px; }
+  .checkout-layout { grid-template-columns: minmax(0, 1fr); margin-top: 21px; }
   .cart-line { grid-template-columns: 78px minmax(0, 1fr) auto; gap: 10px; padding: 10px; }
   .cart-line-image { width: 78px; }
   .cart-line-name { font-size: 13px; }
@@ -1996,6 +2002,89 @@ body {
   font-family: Georgia, "Times New Roman", serif;
 }
 
+.admin-metric,
+.admin-work-queue,
+.admin-settings-panel,
+.admin-state-panel,
+.admin-record,
+.admin-panel,
+.admin-category-item,
+.admin-creator,
+.admin-promo-item,
+.admin-form-section,
+.admin-list-tools,
+.admin-table-wrap {
+  border-color: #cbbfb1;
+}
+
+.admin-table td { border-top-color: #d9cbbd; }
+
+.admin-settings-panel input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+.admin-settings-panel textarea,
+.admin-settings-panel select,
+.admin-form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+.admin-form textarea,
+.admin-form select,
+.admin-edit-list input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+.admin-edit-list textarea,
+.admin-edit-list select,
+.admin-list-tools input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+.admin-list-tools select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 9px 10px;
+  border: 1px solid #887c6e;
+  border-radius: 4px;
+  background: #fff;
+  color: #302015;
+  font-size: 14px;
+}
+
+.admin-form textarea,
+.admin-edit-list textarea,
+.admin-settings-panel textarea { min-height: 92px; }
+
+.admin-settings-panel input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):focus-visible,
+.admin-settings-panel textarea:focus-visible,
+.admin-settings-panel select:focus-visible,
+.admin-form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):focus-visible,
+.admin-form textarea:focus-visible,
+.admin-form select:focus-visible,
+.admin-edit-list input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):focus-visible,
+.admin-edit-list textarea:focus-visible,
+.admin-edit-list select:focus-visible,
+.admin-list-tools input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):focus-visible,
+.admin-list-tools select:focus-visible {
+  outline-offset: 2px;
+  border-color: #6b4226;
+}
+
+.admin-promo-create { margin-bottom: 24px; }
+.admin-promo-list { gap: 12px; }
+.admin-promo-item { overflow: hidden; background: #fffdfa; border: 1px solid #cbbfb1; border-radius: 6px; }
+.admin-promo-item > summary {
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  list-style-position: inside;
+}
+.admin-promo-item[open] > summary { border-bottom: 1px solid #d9cbbd; }
+.admin-promo-editor { padding: 18px; }
+.admin-promo-item .admin-promo-editor > .admin-form { max-width: 100%; }
+
+@media (max-width: 600px) {
+  .admin-promo-item > summary {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .admin-promo-item > summary .admin-expand-label { display: none; }
+  .admin-promo-editor { padding: 13px; }
+}
+
 @media (min-width: 768px) and (max-width: 1100px) {
   .wrap,
   .page-wrap { width: min(100% - 44px, 1020px); }
@@ -2668,6 +2757,17 @@ body {
   color: #75695f;
   font-size: 13px;
 }
+
+.promo-empty-state {
+  max-width: 680px;
+  padding: clamp(22px, 4vw, 36px);
+  background: #fff;
+  border: 1px solid #cbbfb1;
+  border-radius: 8px;
+}
+
+.promo-empty-state h2 { margin: 0; color: #30251b; font-size: 21px; }
+.promo-empty-state p { margin: 9px 0 18px; color: #51473d; line-height: 1.6; }
 
 .contact-page {
   padding-top: clamp(24px, 4vw, 48px);

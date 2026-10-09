@@ -335,46 +335,6 @@ export async function deleteCategory(formData: FormData) {
   redirect("/admin/categories?success=deleted");
 }
 
-const orderStatuses = [
-  "DRAFT", "WAITING_STOCK_CONFIRMATION", "STOCK_CONFIRMED",
-  "WAITING_PAYMENT", "PAID", "PROCESSING", "SHIPPED", "COMPLETED", "CANCELLED",
-] as const;
-const transitions: Record<(typeof orderStatuses)[number], (typeof orderStatuses)[number][]> = {
-  DRAFT: ["WAITING_STOCK_CONFIRMATION", "CANCELLED"],
-  WAITING_STOCK_CONFIRMATION: ["STOCK_CONFIRMED", "CANCELLED"],
-  STOCK_CONFIRMED: ["WAITING_PAYMENT", "CANCELLED"],
-  WAITING_PAYMENT: ["PAID", "CANCELLED"],
-  PAID: ["PROCESSING", "CANCELLED"],
-  PROCESSING: ["SHIPPED", "CANCELLED"],
-  SHIPPED: ["COMPLETED"],
-  COMPLETED: [],
-  CANCELLED: [],
-};
-
-export async function updateOrderStatus(formData: FormData) {
-  const { supabase } = await requireAdmin();
-  const id = z.string().uuid().safeParse(formData.get("id"));
-  const target = z.enum(orderStatuses).safeParse(formData.get("status"));
-  if (!id.success || !target.success) redirect("/admin/orders?error=invalid");
-  const { data: order, error: readError } = await supabase
-    .from("orders").select("status").eq("id", id.data).maybeSingle();
-  if (readError) {
-    console.error("Admin could not read order status.", readError);
-    redirect("/admin/orders?error=save");
-  }
-  if (!order || !transitions[order.status].includes(target.data)) {
-    redirect("/admin/orders?error=transition");
-  }
-  const { error } = await supabase.from("orders").update({ status: target.data }).eq("id", id.data);
-  if (error) {
-    console.error("Admin could not update order status.", error);
-    redirect("/admin/orders?error=save");
-  }
-  revalidatePath("/admin");
-  revalidatePath("/admin/orders");
-  redirect("/admin/orders?success=updated");
-}
-
 export async function updateMember(formData: FormData) {
   const { supabase } = await requireAdmin();
   const id = z.string().uuid().safeParse(formData.get("id"));
@@ -474,6 +434,76 @@ export async function deleteMemberDiscount(formData: FormData) {
   redirect("/admin/member-discounts?success=deleted");
 }
 
+const promoDestinationUrl = z.string().url().max(2048).refine((value) => value.startsWith("https://"));
+const promoImageUrl = z.union([promoDestinationUrl, z.literal("")]);
+const promoCardSchema = z.object({
+  title: z.string().trim().min(2).max(160),
+  description: z.string().trim().max(1000),
+  image_url: promoImageUrl,
+  destination_url: promoDestinationUrl,
+  sort_order: z.coerce.number().int().min(-100000).max(100000),
+  is_active: z.boolean(),
+});
+
+function readPromoCardForm(formData: FormData) {
+  return promoCardSchema.safeParse({
+    title: formData.get("title"),
+    description: formData.get("description") || "",
+    image_url: formData.get("image_url") || "",
+    destination_url: formData.get("destination_url"),
+    sort_order: formData.get("sort_order"),
+    is_active: formData.get("is_active") === "on",
+  });
+}
+
+export async function createPromoCard(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const parsed = readPromoCardForm(formData);
+  if (!parsed.success) redirect("/admin/promos?error=invalid");
+  const { error } = await supabase.from("promo_cards").insert({
+    ...parsed.data,
+    description: parsed.data.description || null,
+    image_url: parsed.data.image_url || null,
+  });
+  if (error) {
+    console.error("Admin could not create promo card.", error);
+    redirect("/admin/promos?error=save");
+  }
+  revalidatePath("/promo");
+  redirect("/admin/promos?success=created");
+}
+
+export async function updatePromoCard(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = z.string().uuid().safeParse(formData.get("id"));
+  const parsed = readPromoCardForm(formData);
+  if (!id.success || !parsed.success) redirect("/admin/promos?error=invalid");
+  const { error } = await supabase.from("promo_cards").update({
+    ...parsed.data,
+    description: parsed.data.description || null,
+    image_url: parsed.data.image_url || null,
+  }).eq("id", id.data);
+  if (error) {
+    console.error("Admin could not update promo card.", error);
+    redirect("/admin/promos?error=save");
+  }
+  revalidatePath("/promo");
+  redirect("/admin/promos?success=updated");
+}
+
+export async function deletePromoCard(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = z.string().uuid().safeParse(formData.get("id"));
+  if (!id.success) redirect("/admin/promos?error=invalid");
+  const { error } = await supabase.from("promo_cards").delete().eq("id", id.data);
+  if (error) {
+    console.error("Admin could not delete promo card.", error);
+    redirect("/admin/promos?error=delete");
+  }
+  revalidatePath("/promo");
+  redirect("/admin/promos?success=deleted");
+}
+
 export async function updateSiteSettings(formData: FormData) {
   const { supabase } = await requireAdmin();
   const httpsUrl = z.union([z.string().url().max(2048).refine((value) => value.startsWith("https://")), z.literal("")]);
@@ -482,7 +512,6 @@ export async function updateSiteSettings(formData: FormData) {
       const digits = value.replace(/\D/g, "");
       return digits.length >= 10 && digits.length <= 15;
     }),
-    reseller_whatsapp_group_url: httpsUrl,
     address: z.string().trim().max(500),
     email: z.union([z.string().trim().email().max(254), z.literal("")]),
     phone: z.string().trim().max(22),
@@ -492,13 +521,9 @@ export async function updateSiteSettings(formData: FormData) {
     google_maps_url: httpsUrl,
     shopee_url: httpsUrl,
     shop_photo_url: httpsUrl,
-    promo_tiktok_url: httpsUrl,
-    promo_tiktok_image_url: httpsUrl,
-    promo_reseller_image_url: httpsUrl,
   });
   const parsed = settingsSchema.safeParse({
     whatsapp_admin_number: formData.get("whatsapp_admin_number"),
-    reseller_whatsapp_group_url: formData.get("reseller_whatsapp_group_url") || "",
     address: formData.get("address") || "",
     email: formData.get("email") || "",
     phone: formData.get("phone") || "",
@@ -508,14 +533,10 @@ export async function updateSiteSettings(formData: FormData) {
     google_maps_url: formData.get("google_maps_url") || "",
     shopee_url: formData.get("shopee_url") || "",
     shop_photo_url: formData.get("shop_photo_url") || "",
-    promo_tiktok_url: formData.get("promo_tiktok_url") || "",
-    promo_tiktok_image_url: formData.get("promo_tiktok_image_url") || "",
-    promo_reseller_image_url: formData.get("promo_reseller_image_url") || "",
   });
   if (!parsed.success) redirect("/admin/settings?error=invalid");
   const { error } = await supabase.from("site_settings").update({
     whatsapp_admin_number: parsed.data.whatsapp_admin_number,
-    reseller_whatsapp_group_url: parsed.data.reseller_whatsapp_group_url || null,
     address: parsed.data.address || null,
     email: parsed.data.email || null,
     phone: parsed.data.phone || null,
@@ -525,9 +546,6 @@ export async function updateSiteSettings(formData: FormData) {
     google_maps_url: parsed.data.google_maps_url || null,
     shopee_url: parsed.data.shopee_url || null,
     shop_photo_url: parsed.data.shop_photo_url || null,
-    promo_tiktok_url: parsed.data.promo_tiktok_url || null,
-    promo_tiktok_image_url: parsed.data.promo_tiktok_image_url || null,
-    promo_reseller_image_url: parsed.data.promo_reseller_image_url || null,
   }).eq("id", true);
   if (error) {
     console.error("Admin could not update site settings.", error);

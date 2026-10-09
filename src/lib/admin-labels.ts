@@ -1,16 +1,4 @@
-import type { Order, Product } from "@/types/database";
-
-export const orderStatusLabels: Record<Order["status"], string> = {
-  DRAFT: "Draf",
-  WAITING_STOCK_CONFIRMATION: "Menunggu konfirmasi stok",
-  STOCK_CONFIRMED: "Stok dikonfirmasi",
-  WAITING_PAYMENT: "Menunggu pembayaran",
-  PAID: "Sudah dibayar",
-  PROCESSING: "Diproses",
-  SHIPPED: "Dikirim",
-  COMPLETED: "Selesai",
-  CANCELLED: "Dibatalkan",
-};
+import type { Product } from "@/types/database";
 
 export const stockStatusLabels: Record<Product["stock_status"], string> = {
   AVAILABLE: "Tersedia di katalog",
