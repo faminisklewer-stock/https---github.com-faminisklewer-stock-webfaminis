@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Icon } from "@/components/Icons";
 import { getCategories, getProducts } from "@/lib/catalog";
 import { ProductGrid } from "@/components/ProductGrid";
 import { siteUrl } from "@/lib/site";
-import type { Product } from "@/types/database";
 
 export const metadata: Metadata = {
   title: "Produk Fashion Muslim Ecer & Grosir",
@@ -22,27 +22,23 @@ function first(value: string | string[] | undefined) {
 export default async function ProductListingPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const categorySlug = first(params.kategori);
-  const sort = first(params.urut);
-  const min = Number(first(params.min));
-  const max = Number(first(params.max));
-  const stockValue = first(params.stok);
-  const stockStatus = ["AVAILABLE", "LOW_STOCK", "OUT_OF_STOCK", "CONFIRM"].includes(stockValue ?? "")
-    ? stockValue as Product["stock_status"]
-    : undefined;
-  const featuredForReseller = first(params.pilihan) === "reseller";
+  const searchTerm = first(params.q)?.trim() ?? "";
 
   const [categories, products] = await Promise.all([
     getCategories(),
     getProducts({
       categorySlug,
-      sort,
-      minPrice: Number.isFinite(min) && min > 0 ? min : undefined,
-      maxPrice: Number.isFinite(max) && max > 0 ? max : undefined,
-      stockStatus,
-      featuredForReseller,
+      search: searchTerm || undefined,
     }),
   ]);
   const selectedCategory = categories.find((category) => category.slug === categorySlug);
+  const categoryLink = (slug?: string) => {
+    const query = new URLSearchParams();
+    if (slug) query.set("kategori", slug);
+    if (searchTerm) query.set("q", searchTerm);
+    const queryString = query.toString();
+    return queryString ? `/produk?${queryString}` : "/produk";
+  };
 
   return (
     <div className="page-wrap">
@@ -57,48 +53,44 @@ export default async function ProductListingPage({ searchParams }: { searchParam
         </div>
         <span className="result-count">{products.length} produk ditampilkan</span>
       </div>
-      <form className="catalog-filters" action="/produk">
-        <label>
-          Kategori
-          <select name="kategori" defaultValue={categorySlug ?? ""}>
-            <option value="">Semua kategori</option>
-            {categories.map((category) => <option value={category.slug} key={category.id}>{category.name}</option>)}
-          </select>
-        </label>
-        <label>
-          Urutkan
-          <select name="urut" defaultValue={sort ?? "terbaru"}>
-            <option value="terbaru">Terbaru</option>
-            <option value="terlaris">Terlaris</option>
-            <option value="harga-termurah">Harga termurah</option>
-            <option value="harga-tertinggi">Harga tertinggi</option>
-            <option value="nama">Nama A-Z</option>
-          </select>
-        </label>
-        <label>
-          Harga minimum
-          <input type="number" name="min" min="0" inputMode="numeric" defaultValue={first(params.min) ?? ""} />
-        </label>
-        <label>
-          Harga maksimum
-          <input type="number" name="max" min="0" inputMode="numeric" defaultValue={first(params.max) ?? ""} />
-        </label>
-        <label>
-          Status katalog
-          <select name="stok" defaultValue={stockValue ?? ""}>
-            <option value="">Semua status</option>
-            <option value="AVAILABLE">Tersedia menurut katalog</option>
-            <option value="LOW_STOCK">Stok menipis</option>
-            <option value="OUT_OF_STOCK">Habis</option>
-            <option value="CONFIRM">Perlu konfirmasi</option>
-          </select>
-        </label>
-        <button className="button button-primary" type="submit">Terapkan filter</button>
-      </form>
+      <div className="catalog-controls">
+        <form className="catalog-search" action="/produk" role="search">
+          {categorySlug ? <input type="hidden" name="kategori" value={categorySlug} /> : null}
+          <Icon name="search" className="catalog-search-icon" />
+          <label className="sr-only" htmlFor="catalog-search-input">Cari di katalog</label>
+          <input
+            id="catalog-search-input"
+            type="search"
+            name="q"
+            defaultValue={searchTerm}
+            placeholder="Cari produk, kategori, atau motif..."
+          />
+          <button className="button button-primary" type="submit">Cari</button>
+        </form>
+        <nav className="catalog-category-filters" aria-label="Filter berdasarkan kategori">
+          <Link
+            className={`catalog-category-chip${!categorySlug ? " is-selected" : ""}`}
+            href={categoryLink()}
+            aria-current={!categorySlug ? "page" : undefined}
+          >
+            Semua kategori
+          </Link>
+          {categories.map((category) => (
+            <Link
+              className={`catalog-category-chip${categorySlug === category.slug ? " is-selected" : ""}`}
+              href={categoryLink(category.slug)}
+              aria-current={categorySlug === category.slug ? "page" : undefined}
+              key={category.id}
+            >
+              {category.name}
+            </Link>
+          ))}
+        </nav>
+      </div>
       <ProductGrid
         products={products}
-        emptyTitle="Belum ada produk yang cocok"
-        emptyDescription="Ubah kata pencarian atau filter. Jika produk belum tampil, Admin mungkin belum mengaktifkan katalog."
+        emptyTitle={searchTerm ? "Produk tidak ditemukan" : "Belum ada produk di kategori ini"}
+        emptyDescription={searchTerm ? "Coba kata pencarian lain atau pilih kategori berbeda." : "Admin dapat mengaktifkan produk untuk kategori ini melalui panel Admin."}
       />
     </div>
   );

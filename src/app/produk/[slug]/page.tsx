@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductPurchasePanel } from "@/components/cart/ProductPurchasePanel";
-import { FavoriteButton } from "@/components/favorites/FavoriteButton";
+import { ShareProductButton } from "@/components/ShareProductButton";
 import { SeoJsonLd } from "@/components/SeoJsonLd";
 import { StockNotice } from "@/components/StockNotice";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
@@ -24,12 +24,13 @@ export async function generateMetadata({
   const title = product.seo_title || product.name;
   const description = product.seo_description || product.short_description || `${product.name} dari Faminis Barokah. Tanyakan ketersediaan stok dan pilihan varian kepada Admin sebelum pembayaran.`;
   const url = product.canonical_url || `${siteUrl}/produk/${product.slug}`;
+  const socialImage = product.og_image || product.product_images[0]?.image_url;
   return {
     title,
     description,
     alternates: { canonical: url },
-    openGraph: { title, description, url, type: "website", images: product.og_image ? [product.og_image] : undefined },
-    twitter: { card: product.og_image ? "summary_large_image" : "summary", title, description, images: product.og_image ? [product.og_image] : undefined },
+    openGraph: { title, description, url, type: "website", images: socialImage ? [socialImage] : undefined },
+    twitter: { card: socialImage ? "summary_large_image" : "summary", title, description, images: socialImage ? [socialImage] : undefined },
   };
 }
 
@@ -118,7 +119,6 @@ export default async function ProductDetailPage({
         <div className="product-detail-copy">
           <Link className="product-category" href={categoryUrl}>{product.categories?.name ?? "Fashion Muslim"}</Link>
           <h1>{product.name}</h1>
-          {product.isSample ? null : <FavoriteButton productId={product.id} />}
           <p className="product-sku">SKU: {product.sku}</p>
           {product.isSample ? <p className="product-sample-label">Produk contoh</p> : null}
           <div className="detail-price">
@@ -153,6 +153,7 @@ export default async function ProductDetailPage({
             label="Tanya Stok via WhatsApp"
             className="button-secondary button-wide"
           />
+          <ShareProductButton name={product.name} url={productUrl} />
           <section className="product-description">
             <h2>Deskripsi produk</h2>
             {product.description ? <p>{product.description}</p> : <p>Informasi produk belum ditambahkan. Tanyakan detail bahan, motif, ukuran, dan warna kepada Admin.</p>}

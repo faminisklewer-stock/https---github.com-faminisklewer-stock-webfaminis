@@ -4,27 +4,27 @@ import { siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Kebijakan Privasi",
-  description: "Informasi data yang digunakan Faminis Barokah untuk akun member dan permintaan pesanan.",
+  description: "Informasi data yang digunakan Faminis Barokah untuk menangani permintaan pesanan.",
   alternates: { canonical: "/kebijakan-privasi" },
   robots: { index: false, follow: false },
-  openGraph: { title: "Kebijakan Privasi Faminis Barokah", description: "Cara data akun dan pesanan digunakan pada website Faminis Barokah.", url: `${siteUrl}/kebijakan-privasi` },
-  twitter: { card: "summary", title: "Kebijakan Privasi Faminis Barokah", description: "Cara data akun dan pesanan digunakan pada website Faminis Barokah." },
+  openGraph: { title: "Kebijakan Privasi Faminis Barokah", description: "Cara data permintaan pesanan digunakan pada website Faminis Barokah.", url: `${siteUrl}/kebijakan-privasi` },
+  twitter: { card: "summary", title: "Kebijakan Privasi Faminis Barokah", description: "Cara data permintaan pesanan digunakan pada website Faminis Barokah." },
 };
 
 export default function PrivacyPage() {
   return (
     <ContentPage
       title="Kebijakan Privasi"
-      description="Kebijakan ini menjelaskan data yang diminta saat menggunakan akun dan membuat permintaan pesanan di website Faminis Barokah."
+      description="Kebijakan ini menjelaskan data yang diminta saat mengirim permintaan pesanan di website Faminis Barokah."
       path="/kebijakan-privasi"
       sections={[
         {
           title: "Data yang diminta",
-          paragraphs: ["Form permintaan pesanan meminta nama, nomor WhatsApp, dan alamat pengiriman. Email bersifat opsional untuk guest. Pendaftaran member meminta nama, nomor WhatsApp, email, dan password."],
+          paragraphs: ["Form permintaan pesanan meminta nama, nomor WhatsApp, dan alamat pengiriman. Email bersifat opsional."],
         },
         {
           title: "Penggunaan data",
-          paragraphs: ["Data pesanan digunakan untuk memeriksa ketersediaan dan menghubungi pelanggan tentang permintaan tersebut. Data akun digunakan untuk menyediakan fitur member dan menampilkan riwayat pesanan pada akun yang masuk."],
+          paragraphs: ["Data pesanan digunakan untuk memeriksa ketersediaan produk, menghubungi pelanggan, dan menangani permintaan tersebut."],
         },
         {
           title: "Penyimpanan dan pertanyaan",

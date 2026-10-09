@@ -74,9 +74,8 @@ export default async function CategoryPage({
         emptyDescription="Kategori ini belum memiliki produk aktif. Silakan kembali untuk melihat koleksi lainnya."
       />
       <div className="related-categories">
-        <h2>Jelajahi katalog</h2>
+        <h2>Kategori lain</h2>
         <Link href="/produk">Semua produk</Link>
-        <Link href="/panduan-grosir">Panduan belanja grosir</Link>
         <Link href="/reseller">Program reseller</Link>
       </div>
     </div>

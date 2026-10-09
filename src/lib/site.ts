@@ -4,8 +4,7 @@ export const siteUrl =
 export const publicStaticPages = [
   { path: "/", priority: 1 },
   { path: "/produk", priority: 0.9 },
+  { path: "/promo", priority: 0.7 },
   { path: "/reseller", priority: 0.8 },
-  { path: "/tentang-kami", priority: 0.6 },
   { path: "/kontak", priority: 0.6 },
-  { path: "/panduan-grosir", priority: 0.6 },
 ];

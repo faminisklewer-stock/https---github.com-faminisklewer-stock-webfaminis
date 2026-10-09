@@ -97,7 +97,7 @@ export function SearchBar({ initialValue = "" }: { initialValue?: string }) {
           onFocus={() => { if (suggestions.length) setOpen(true); }}
           onBlur={() => window.setTimeout(() => setOpen(false), 120)}
           onKeyDown={handleKeyDown}
-          placeholder="Cari daster, mukena, gamis, sarung..."
+          placeholder="Cari produk, kategori, atau motif..."
           autoComplete="off"
           role="combobox"
           aria-autocomplete="list"
@@ -106,7 +106,7 @@ export function SearchBar({ initialValue = "" }: { initialValue?: string }) {
           aria-controls={`search-options-${id}`}
           aria-activedescendant={activeIndex >= 0 ? `search-option-${id}-${activeIndex}` : undefined}
         />
-        <button type="submit" aria-label="Mulai pencarian">Cari</button>
+        <button type="submit" aria-label="Mulai pencarian"><Icon name="search" /></button>
       </form>
       {open && suggestions.length ? (
         <ul className="search-suggestions" id={`search-options-${id}`} role="listbox" aria-label="Saran produk">
@@ -128,7 +128,7 @@ export function SearchBar({ initialValue = "" }: { initialValue?: string }) {
         </ul>
       ) : null}
       {loading ? <span className="search-error" role="status">Mencari produk...</span> : null}
-      {!loading && searchedTerm === value.trim() && !suggestions.length && !error ? (
+      {!loading && searchedTerm.length >= 2 && searchedTerm === value.trim() && !suggestions.length && !error ? (
         <span className="search-error" role="status">Tidak ada saran. Tekan Enter untuk melihat hasil pencarian.</span>
       ) : null}
       {error ? <span className="search-error" role="status">{error}</span> : null}

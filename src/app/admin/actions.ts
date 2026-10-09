@@ -489,6 +489,12 @@ export async function updateSiteSettings(formData: FormData) {
     instagram_url: httpsUrl,
     tiktok_url: httpsUrl,
     facebook_url: httpsUrl,
+    google_maps_url: httpsUrl,
+    shopee_url: httpsUrl,
+    shop_photo_url: httpsUrl,
+    promo_tiktok_url: httpsUrl,
+    promo_tiktok_image_url: httpsUrl,
+    promo_reseller_image_url: httpsUrl,
   });
   const parsed = settingsSchema.safeParse({
     whatsapp_admin_number: formData.get("whatsapp_admin_number"),
@@ -499,6 +505,12 @@ export async function updateSiteSettings(formData: FormData) {
     instagram_url: formData.get("instagram_url") || "",
     tiktok_url: formData.get("tiktok_url") || "",
     facebook_url: formData.get("facebook_url") || "",
+    google_maps_url: formData.get("google_maps_url") || "",
+    shopee_url: formData.get("shopee_url") || "",
+    shop_photo_url: formData.get("shop_photo_url") || "",
+    promo_tiktok_url: formData.get("promo_tiktok_url") || "",
+    promo_tiktok_image_url: formData.get("promo_tiktok_image_url") || "",
+    promo_reseller_image_url: formData.get("promo_reseller_image_url") || "",
   });
   if (!parsed.success) redirect("/admin/settings?error=invalid");
   const { error } = await supabase.from("site_settings").update({
@@ -510,6 +522,12 @@ export async function updateSiteSettings(formData: FormData) {
     instagram_url: parsed.data.instagram_url || null,
     tiktok_url: parsed.data.tiktok_url || null,
     facebook_url: parsed.data.facebook_url || null,
+    google_maps_url: parsed.data.google_maps_url || null,
+    shopee_url: parsed.data.shopee_url || null,
+    shop_photo_url: parsed.data.shop_photo_url || null,
+    promo_tiktok_url: parsed.data.promo_tiktok_url || null,
+    promo_tiktok_image_url: parsed.data.promo_tiktok_image_url || null,
+    promo_reseller_image_url: parsed.data.promo_reseller_image_url || null,
   }).eq("id", true);
   if (error) {
     console.error("Admin could not update site settings.", error);

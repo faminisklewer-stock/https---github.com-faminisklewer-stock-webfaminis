@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BrandSymbol } from "@/components/BrandSymbol";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { requireAdmin } from "@/lib/admin";
 
@@ -19,8 +20,11 @@ export default async function AdminLayout({
         <AdminSidebar name={profile.full_name} />
         <div className="admin-content">
           <header className="admin-topbar">
-            <div><span>Faminis Barokah</span><strong>Panel pengelolaan</strong></div>
-            <Link href="/">Lihat toko</Link>
+            <div className="admin-topbar-brand">
+              <BrandSymbol />
+              <span><strong>Faminis Barokah</strong><small>Panel admin</small></span>
+            </div>
+            <Link className="button button-secondary" href="/">Lihat toko</Link>
           </header>
           <div id="konten-utama">{children}</div>
         </div>

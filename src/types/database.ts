@@ -98,6 +98,12 @@ export type SiteSettings = {
   instagram_url: string | null;
   tiktok_url: string | null;
   facebook_url: string | null;
+  google_maps_url: string | null;
+  shopee_url: string | null;
+  shop_photo_url: string | null;
+  promo_tiktok_url: string | null;
+  promo_tiktok_image_url: string | null;
+  promo_reseller_image_url: string | null;
   address: string | null;
   email: string | null;
   phone: string | null;
@@ -111,7 +117,7 @@ export type SiteSettings = {
   updated_at: string;
 };
 
-export type PublicSiteSettings = Omit<SiteSettings, "reseller_whatsapp_group_url">;
+export type PublicSiteSettings = SiteSettings;
 
 type Profile = {
   id: string;

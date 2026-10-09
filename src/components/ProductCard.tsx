@@ -3,10 +3,15 @@ import Link from "next/link";
 import type { CatalogProduct } from "@/lib/catalog";
 import { formatRupiah } from "@/lib/format";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
-import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 
 export function ProductCard({ product }: { product: CatalogProduct }) {
   const image = product.product_images[0];
+  const stockLabels = {
+    AVAILABLE: "Tersedia menurut katalog",
+    LOW_STOCK: "Stok menipis",
+    OUT_OF_STOCK: "Stok habis",
+    CONFIRM: "Stok perlu dikonfirmasi",
+  } as const;
   return (
     <article className="product-card">
       <div className="product-image-frame">
@@ -31,7 +36,6 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
             <span className="product-flag">Terlaris</span>
           ) : null}
         </Link>
-        {product.isSample ? null : <FavoriteButton productId={product.id} />}
       </div>
       <div className="product-card-copy">
         <Link href={`/${product.categories?.slug ?? "produk"}`} className="product-category">
@@ -47,7 +51,9 @@ export function ProductCard({ product }: { product: CatalogProduct }) {
             Grosir{product.isSample ? " (contoh)" : ""} {formatRupiah(product.grosir_price)} · min. {product.grosir_min_qty} item
           </p>
         ) : null}
-        <p className="product-stock">Stok perlu dikonfirmasi</p>
+        <p className={`product-stock product-stock-${product.stock_status.toLocaleLowerCase("en-US")}`}>
+          {stockLabels[product.stock_status]}
+        </p>
         {product.isSample ? (
           <p className="product-sample-note">Contoh katalog, belum dapat dipesan.</p>
         ) : (

@@ -17,7 +17,7 @@ export default function CheckoutPage() {
       <p className="section-eyebrow">Permintaan pesanan</p>
       <h1>Konfirmasi stok dengan Admin</h1>
       <p className="summary-note">Pesanan belum menjadi pembayaran. Admin akan memeriksa stok dan mengirim total akhir melalui WhatsApp.</p>
-      <p className="checkout-guest-note">Anda bisa memesan tanpa masuk atau membuat akun. Isi data penerima di bawah untuk mengirim permintaan pesanan.</p>
+      <p className="checkout-guest-note">Isi data penerima di bawah untuk mengirim permintaan pesanan kepada Admin melalui WhatsApp.</p>
       <StockNotice />
       <CheckoutForm />
     </div>

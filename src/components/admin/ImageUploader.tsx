@@ -15,10 +15,14 @@ export function ImageUploader({
   bucket,
   fieldName = "image_url",
   initialUrl = "",
+  label = "Foto utama",
+  maxFileSizeMB = 5,
 }: {
   bucket: ImageBucket;
   fieldName?: string;
   initialUrl?: string;
+  label?: string;
+  maxFileSizeMB?: number;
 }) {
   const inputId = useId();
   const [url, setUrl] = useState(initialUrl);
@@ -33,8 +37,8 @@ export function ImageUploader({
       setStatus("Pilih gambar JPEG, PNG, atau WebP.");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setStatus("Ukuran gambar maksimal 5 MB.");
+    if (file.size > maxFileSizeMB * 1024 * 1024) {
+      setStatus(`Ukuran gambar maksimal ${maxFileSizeMB} MB.`);
       return;
     }
     setBusy(true);
@@ -66,10 +70,10 @@ export function ImageUploader({
 
   return (
     <div className="field-label image-upload-field">
-      <label htmlFor={inputId}>Foto utama</label>
+      <label htmlFor={inputId}>{label}</label>
       <input type="hidden" name={fieldName} value={url} />
       <input id={inputId} type="file" accept={allowedTypes.join(",")} onChange={upload} disabled={busy} />
-      <span className="upload-hint">JPEG, PNG, atau WebP. Maksimal 5 MB.</span>
+      <span className="upload-hint">JPEG, PNG, atau WebP. Maksimal {maxFileSizeMB} MB.</span>
       {url ? <a href={url} target="_blank" rel="noreferrer">Lihat foto yang tersimpan</a> : null}
       {status ? (
         <span

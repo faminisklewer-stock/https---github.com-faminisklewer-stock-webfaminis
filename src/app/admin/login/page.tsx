@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AuthForm } from "@/components/auth/AuthForm";
+import { BrandSymbol } from "@/components/BrandSymbol";
+import { AdminLoginForm } from "@/components/auth/AuthForm";
 
 export const metadata: Metadata = {
   title: "Masuk Admin",
@@ -19,7 +20,7 @@ export default async function AdminLoginPage({
       <a className="skip-link" href="#konten-utama">Lewati ke konten</a>
       <main className="admin-login-card" id="konten-utama">
         <Link className="admin-login-brand" href="/" aria-label="Faminis Barokah, kembali ke toko">
-          <span className="brand-mark" aria-hidden="true">F</span>
+          <BrandSymbol />
           <span>Faminis Barokah<small>Panel Admin</small></span>
         </Link>
         <h1>Masuk ke panel admin</h1>
@@ -27,7 +28,7 @@ export default async function AdminLoginPage({
         {error === "forbidden" ? (
           <p className="form-error" role="alert">Akun ini tidak memiliki akses admin. Masuk dengan akun admin.</p>
         ) : null}
-        <AuthForm mode="login" redirectTo="/admin" audience="admin" />
+        <AdminLoginForm redirectTo="/admin" />
         <Link className="admin-login-back" href="/">Kembali ke toko</Link>
       </main>
     </div>

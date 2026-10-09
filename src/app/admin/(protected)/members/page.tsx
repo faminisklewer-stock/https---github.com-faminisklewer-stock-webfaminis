@@ -82,8 +82,8 @@ export default async function AdminMembersPage({
         </div>
       ) : (
         <section className="admin-state-panel">
-          <h2>Belum ada akun pelanggan</h2>
-          <p>Akun baru akan muncul di sini setelah pelanggan mendaftar.</p>
+          <h2>Belum ada profil pelanggan tersimpan</h2>
+          <p>Pendaftaran akun pelanggan di website sudah dihapus. Profil lama tetap akan tampil di sini jika tersedia.</p>
         </section>
       )}
     </main>

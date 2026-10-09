@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandSymbol } from "@/components/BrandSymbol";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -8,8 +9,6 @@ const adminLinks = [
   ["Produk", "/admin/products"],
   ["Kategori", "/admin/categories"],
   ["Pesanan", "/admin/orders"],
-  ["Member", "/admin/members"],
-  ["Diskon member", "/admin/member-discounts"],
   ["Pengaturan", "/admin/settings"],
 ];
 
@@ -19,7 +18,7 @@ export function AdminSidebar({ name }: { name: string }) {
   return (
     <aside className="admin-sidebar">
       <Link href="/admin" className="admin-brand">
-        <span className="brand-mark" aria-hidden="true">F</span>
+        <BrandSymbol />
         <span>Faminis <b>Barokah</b><small>Panel Admin</small></span>
       </Link>
       <nav aria-label="Menu admin">
