@@ -6,9 +6,14 @@ import { FormEvent, useState } from "react";
 import { z } from "zod";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
 
-const loginSchema = z.object({
+const customerLoginSchema = z.object({
   email: z.string().trim().email(),
   password: z.string().min(8),
+});
+
+const adminLoginSchema = z.object({
+  email: z.string().trim().email(),
+  password: z.string().min(6),
 });
 
 const registerSchema = z.object({
@@ -46,9 +51,9 @@ export function AuthForm({
 
     try {
       if (mode === "login") {
-        const parsed = loginSchema.safeParse(values);
+        const parsed = (audience === "admin" ? adminLoginSchema : customerLoginSchema).safeParse(values);
         if (!parsed.success) {
-          setError("Masukkan email yang benar dan password minimal 8 karakter.");
+          setError(`Masukkan email yang benar dan password minimal ${audience === "admin" ? 6 : 8} karakter.`);
           return;
         }
         const supabase = getBrowserSupabaseClient();
@@ -150,7 +155,15 @@ export function AuthForm({
         {mode !== "reset" ? (
           <label className="field-label">
             Password
-            <input name="password" type="password" autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={8} aria-describedby={mode === "register" ? "password-help" : undefined} required />
+            <input
+              name="password"
+              type="password"
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+              minLength={mode === "login" && audience === "admin" ? 6 : 8}
+              aria-describedby={mode === "register" ? "password-help" : mode === "login" && audience === "admin" ? "admin-password-help" : undefined}
+              required
+            />
+            {mode === "login" && audience === "admin" ? <span className="auth-field-help" id="admin-password-help">Minimal 6 karakter.</span> : null}
             {mode === "register" ? <span className="auth-field-help" id="password-help">Gunakan minimal 8 karakter.</span> : null}
           </label>
         ) : null}
