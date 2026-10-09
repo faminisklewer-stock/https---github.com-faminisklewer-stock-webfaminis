@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AdminFeedback } from "@/components/admin/AdminFeedback";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { requireAdmin } from "@/lib/admin";
 import { createProduct } from "@/app/admin/actions";
@@ -19,12 +20,21 @@ export default async function NewProductPage({
 
   return (
     <main className="admin-page">
-      <div className="admin-page-heading"><div><p className="section-eyebrow">Katalog</p><h1>Tambah produk</h1></div><Link href="/admin/products" className="text-link">Kembali</Link></div>
+      <AdminPageHeader
+        eyebrow="Katalog"
+        title="Tambah produk"
+        description="Lengkapi informasi utama agar produk siap ditinjau dan ditampilkan di katalog."
+        actions={<Link href="/admin/products" className="text-link">Kembali ke produk</Link>}
+      />
       <AdminFeedback searchParams={params} />
       {data?.length ? (
         <ProductForm categories={data as Category[]} action={createProduct} />
       ) : (
-        <div className="admin-panel"><p>Buat kategori terlebih dahulu sebelum menambahkan produk.</p><Link className="button button-primary" href="/admin/categories">Kelola kategori</Link></div>
+        <section className="admin-state-panel">
+          <h2>Produk perlu memiliki kategori</h2>
+          <p>Buat kategori terlebih dahulu. Setelah tersimpan, kategori akan tersedia di formulir produk.</p>
+          <Link className="button button-primary" href="/admin/categories">Kelola kategori</Link>
+        </section>
       )}
     </main>
   );

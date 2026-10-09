@@ -14,15 +14,17 @@ export function AdminFeedback({
           ? "Produk tersimpan, tetapi foto belum tersimpan. Coba unggah kembali."
         : error === "variant"
           ? "Varian belum tersimpan. Periksa SKU, nilai harga, dan koneksi."
-        : "Perubahan belum tersimpan. Coba lagi atau periksa koneksi.";
-    return <p className="form-error" role="alert">{message}</p>;
+          : error === "transition"
+            ? "Status pesanan tidak dapat dilanjutkan dari tahap saat ini. Muat ulang daftar dan periksa kembali."
+          : "Perubahan belum tersimpan. Coba lagi atau periksa koneksi.";
+    return <p className="form-error admin-feedback" role="alert">{message}</p>;
   }
   if (success) {
     const message = success === "created" ? "Data berhasil ditambahkan."
       : success === "deleted" ? "Data berhasil dihapus."
         : success === "variant" ? "Varian berhasil diperbarui."
         : "Perubahan berhasil disimpan.";
-    return <p className="form-success" role="status">{message}</p>;
+    return <p className="form-success admin-feedback" role="status">{message}</p>;
   }
   return null;
 }

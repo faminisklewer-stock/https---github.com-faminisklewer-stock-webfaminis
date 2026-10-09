@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useId, useState } from "react";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 type ImageBucket = "product-images" | "category-images" | "banner-images" | "site-assets";
@@ -20,6 +20,7 @@ export function ImageUploader({
   fieldName?: string;
   initialUrl?: string;
 }) {
+  const inputId = useId();
   const [url, setUrl] = useState(initialUrl);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
@@ -65,12 +66,19 @@ export function ImageUploader({
 
   return (
     <div className="field-label image-upload-field">
-      Foto utama
+      <label htmlFor={inputId}>Foto utama</label>
       <input type="hidden" name={fieldName} value={url} />
-      <input type="file" accept={allowedTypes.join(",")} onChange={upload} disabled={busy} />
+      <input id={inputId} type="file" accept={allowedTypes.join(",")} onChange={upload} disabled={busy} />
       <span className="upload-hint">JPEG, PNG, atau WebP. Maksimal 5 MB.</span>
       {url ? <a href={url} target="_blank" rel="noreferrer">Lihat foto yang tersimpan</a> : null}
-      {status ? <span className={status.includes("berhasil") ? "form-success" : "form-error"} role="status">{status}</span> : null}
+      {status ? (
+        <span
+          className={status.includes("berhasil") ? "form-success" : "form-error"}
+          role={status.includes("berhasil") ? "status" : "alert"}
+        >
+          {status}
+        </span>
+      ) : null}
     </div>
   );
 }
