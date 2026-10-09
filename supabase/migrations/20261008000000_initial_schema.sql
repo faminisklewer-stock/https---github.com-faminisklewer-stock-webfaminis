@@ -617,6 +617,32 @@ alter table public.member_discounts enable row level security;
 alter table public.seo_pages enable row level security;
 alter table public.site_settings enable row level security;
 
+drop policy if exists "Profiles are visible to their owner or admin" on public.profiles;
+drop policy if exists "Admins manage profiles" on public.profiles;
+drop policy if exists "Owners update basic profile" on public.profiles;
+drop policy if exists "Active categories are public" on public.categories;
+drop policy if exists "Admins manage categories" on public.categories;
+drop policy if exists "Active products are public" on public.products;
+drop policy if exists "Admins manage products" on public.products;
+drop policy if exists "Active variants of public products are public" on public.product_variants;
+drop policy if exists "Admins manage variants" on public.product_variants;
+drop policy if exists "Images of public products are public" on public.product_images;
+drop policy if exists "Admins manage product images" on public.product_images;
+drop policy if exists "Owners manage carts" on public.carts;
+drop policy if exists "Owners manage cart items" on public.cart_items;
+drop policy if exists "Customers see their orders" on public.orders;
+drop policy if exists "Admins manage orders" on public.orders;
+drop policy if exists "Customers see their order items" on public.order_items;
+drop policy if exists "Admins manage order items" on public.order_items;
+drop policy if exists "Owners manage favorites" on public.favorites;
+drop policy if exists "Active banners are public" on public.banners;
+drop policy if exists "Admins manage banners" on public.banners;
+drop policy if exists "Admins manage promotions" on public.promotions;
+drop policy if exists "Admins manage member discounts" on public.member_discounts;
+drop policy if exists "Admins manage SEO pages" on public.seo_pages;
+drop policy if exists "Admins manage site settings" on public.site_settings;
+drop policy if exists "Public reads storefront settings" on public.site_settings;
+
 create policy "Profiles are visible to their owner or admin"
   on public.profiles for select to authenticated
   using (id = auth.uid() or public.is_admin());
@@ -765,6 +791,11 @@ values
   ('banner-images', 'banner-images', true, 5242880, array['image/jpeg', 'image/png', 'image/webp']),
   ('site-assets', 'site-assets', true, 2097152, array['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'])
 on conflict (id) do nothing;
+
+drop policy if exists "Public reads storefront media" on storage.objects;
+drop policy if exists "Admins upload storefront media" on storage.objects;
+drop policy if exists "Admins update storefront media" on storage.objects;
+drop policy if exists "Admins delete storefront media" on storage.objects;
 
 create policy "Public reads storefront media"
   on storage.objects for select to anon, authenticated
