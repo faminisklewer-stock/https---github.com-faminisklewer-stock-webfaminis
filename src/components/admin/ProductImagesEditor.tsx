@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { ChangeEvent, useId, useState } from "react";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
+import { isSupportedImageUrl, normalizeGoogleDriveImageUrl } from "@/lib/image-url";
 import type { ProductImage } from "@/types/database";
 
 const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
@@ -23,11 +24,39 @@ export function ProductImagesEditor({ initialImages }: { initialImages: ProductI
   const inputId = useId();
   const [images, setImages] = useState<EditableImage[]>(() => initialImages.map((image) => ({
     id: image.id,
-    image_url: image.image_url,
+    image_url: normalizeGoogleDriveImageUrl(image.image_url) ?? image.image_url,
     alt_text: image.alt_text,
   })));
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
+  const [imageLink, setImageLink] = useState("");
+
+  function addImageLink() {
+    const value = imageLink.trim();
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(value);
+    } catch {
+      setStatus("Masukkan tautan gambar HTTPS yang valid atau tautan file Google Drive.");
+      return;
+    }
+    const normalizedUrl = normalizeGoogleDriveImageUrl(value);
+    if (!normalizedUrl || parsedUrl.protocol !== "https:" || !isSupportedImageUrl(normalizedUrl)) {
+      setStatus("Masukkan tautan gambar HTTPS yang valid atau tautan file Google Drive.");
+      return;
+    }
+    if (images.length >= maxImages) {
+      setStatus(`Satu produk dapat memiliki maksimal ${maxImages} foto.`);
+      return;
+    }
+    setImages((current) => [...current, {
+      id: null,
+      image_url: normalizedUrl,
+      alt_text: "",
+    }]);
+    setImageLink("");
+    setStatus("Tautan gambar ditambahkan. Simpan formulir produk untuk menerapkannya.");
+  }
 
   async function upload(event: ChangeEvent<HTMLInputElement>) {
     const input = event.currentTarget;
@@ -112,6 +141,30 @@ export function ProductImagesEditor({ initialImages }: { initialImages: ProductI
       <span id={`${inputId}-hint`} className="upload-hint">
         Unggah beberapa foto agar pelanggan dapat melihat detail produk. JPEG, PNG, atau WebP, maksimal 5 MB per foto.
       </span>
+      <label className="field-label">Atau tautan gambar Google Drive
+        <input
+          type="url"
+          value={imageLink}
+          onChange={(event) => {
+            setImageLink(event.target.value);
+            setStatus("");
+          }}
+          placeholder="https://drive.google.com/file/d/..."
+          maxLength={2048}
+          disabled={busy || images.length >= maxImages}
+        />
+      </label>
+      <span className="upload-hint">
+        Untuk Google Drive, ubah akses file menjadi “Siapa saja yang memiliki link”, lalu tempel tautan berbagi.
+      </span>
+      <button
+        className="button button-secondary"
+        type="button"
+        onClick={addImageLink}
+        disabled={busy || images.length >= maxImages}
+      >
+        Tambahkan tautan foto
+      </button>
       <input type="hidden" name="product_images" value={JSON.stringify(images)} />
       {images.length ? (
         <ol className="product-images-list">
@@ -160,7 +213,7 @@ export function ProductImagesEditor({ initialImages }: { initialImages: ProductI
       <span
         id={`${inputId}-status`}
         className={status.includes("berhasil") || status.includes("Simpan") ? "form-success" : "form-error"}
-        role={status && (status.includes("belum") || status.includes("maksimal") || status.includes("Pilih")) ? "alert" : "status"}
+        role={status && (status.includes("belum") || status.includes("maksimal") || status.includes("Pilih") || status.includes("valid")) ? "alert" : "status"}
       >
         {status}
       </span>

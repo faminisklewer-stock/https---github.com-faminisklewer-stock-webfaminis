@@ -4,11 +4,22 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin";
+import { isSupportedImageUrl, normalizeGoogleDriveImageUrl } from "@/lib/image-url";
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const imageUrlSchema = z.string().trim().url().max(2048)
+  .refine((value) => value.startsWith("https://"))
+  .refine((value) => normalizeGoogleDriveImageUrl(value) !== null)
+  .transform((value) => normalizeGoogleDriveImageUrl(value) ?? value)
+  .refine((value) => isSupportedImageUrl(value));
+const externalImageUrlSchema = z.string().trim().url().max(2048)
+  .refine((value) => normalizeGoogleDriveImageUrl(value) !== null)
+  .transform((value) => normalizeGoogleDriveImageUrl(value) ?? value);
+const optionalImageUrlSchema = z.union([imageUrlSchema, z.literal("")]);
+const optionalExternalImageUrlSchema = z.union([externalImageUrlSchema, z.literal("")]);
 const productImageSchema = z.object({
   id: z.string().uuid().nullable(),
-  image_url: z.string().url().max(2048).refine((value) => value.startsWith("https://")),
+  image_url: imageUrlSchema,
   alt_text: z.string().trim().max(250),
 });
 const productSchema = z.object({
@@ -24,7 +35,7 @@ const productSchema = z.object({
   seo_description: z.string().trim().max(320).optional(),
   focus_keyword: z.string().trim().max(100).optional(),
   canonical_url: z.union([z.string().url().max(2048), z.literal("")]).optional(),
-  og_image: z.union([z.string().url().max(2048), z.literal("")]).optional(),
+  og_image: optionalExternalImageUrlSchema.optional(),
   is_active: z.boolean(),
   is_best_seller: z.boolean(),
 });
@@ -248,7 +259,7 @@ const variantSchema = z.object({
     z.union([z.coerce.number().int().min(0).max(999999), z.null()]),
   ),
   additional_price: z.coerce.number().min(0).max(100_000_000),
-  image_url: z.union([z.string().url().max(2048), z.literal("")]),
+  image_url: optionalImageUrlSchema,
   is_active: z.boolean(),
 });
 
@@ -308,7 +319,7 @@ const categorySchema = z.object({
   name: z.string().trim().min(2).max(120),
   slug: z.string().trim().regex(slugPattern),
   description: z.string().trim().max(1000).optional(),
-  image_url: z.union([z.string().url().max(2048), z.literal("")]).optional(),
+  image_url: optionalImageUrlSchema.optional(),
   seo_title: z.string().trim().max(180).optional(),
   seo_description: z.string().trim().max(320).optional(),
   is_active: z.boolean(),
@@ -478,7 +489,7 @@ export async function deleteMemberDiscount(formData: FormData) {
 }
 
 const promoDestinationUrl = z.string().url().max(2048).refine((value) => value.startsWith("https://"));
-const promoImageUrl = z.string().url().max(2048).refine((value) => value.startsWith("https://"));
+const promoImageUrl = imageUrlSchema;
 const promoCardSchema = z.object({
   title: z.string().trim().min(2).max(160),
   description: z.string().trim().max(1000),
@@ -620,7 +631,7 @@ export async function updateSiteSettings(formData: FormData) {
     facebook_url: httpsUrl,
     google_maps_url: httpsUrl,
     shopee_url: httpsUrl,
-    shop_photo_url: httpsUrl,
+    shop_photo_url: optionalImageUrlSchema,
   });
   const parsed = settingsSchema.safeParse({
     whatsapp_admin_number: formData.get("whatsapp_admin_number"),

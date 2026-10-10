@@ -62,7 +62,7 @@ export default async function EditProductPage({
                     <label className="field-label">Ukuran<input name="size" defaultValue={variant.size ?? ""} maxLength={80} /></label>
                     <label className="field-label">Stok catatan<input name="stock" type="number" min="0" defaultValue={variant.stock ?? ""} /></label>
                     <label className="field-label">Tambahan harga<input name="additional_price" type="number" min="0" step="1" defaultValue={variant.additional_price} required /></label>
-                    <label className="field-label">URL foto varian<input name="image_url" type="url" defaultValue={variant.image_url ?? ""} /></label>
+                    <label className="field-label">URL foto varian (opsional, mendukung Google Drive)<input name="image_url" type="url" defaultValue={variant.image_url ?? ""} placeholder="https://drive.google.com/file/d/..." /></label>
                   </div>
                   <div className="admin-form-actions">
                     <label className="check-label"><input name="is_active" type="checkbox" defaultChecked={variant.is_active} /> Aktif</label>
@@ -91,7 +91,7 @@ export default async function EditProductPage({
               <label className="field-label">Ukuran<input name="size" maxLength={80} /></label>
               <label className="field-label">Stok catatan<input name="stock" type="number" min="0" /></label>
               <label className="field-label">Tambahan harga<input name="additional_price" type="number" min="0" step="1" defaultValue="0" required /></label>
-              <label className="field-label">URL foto varian<input name="image_url" type="url" /></label>
+              <label className="field-label">URL foto varian (opsional, mendukung Google Drive)<input name="image_url" type="url" placeholder="https://drive.google.com/file/d/..." /></label>
             </div>
             <label className="check-label"><input name="is_active" type="checkbox" defaultChecked /> Aktif</label>
             <button className="button button-primary" type="submit">Tambah varian</button>

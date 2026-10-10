@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useId, useState } from "react";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
+import { isSupportedImageUrl, normalizeGoogleDriveImageUrl } from "@/lib/image-url";
 
 type ImageBucket = "product-images" | "category-images" | "banner-images" | "site-assets";
 const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
@@ -27,9 +28,28 @@ export function ImageUploader({
   helperText?: string;
 }) {
   const inputId = useId();
-  const [url, setUrl] = useState(initialUrl);
+  const initialImageUrl = normalizeGoogleDriveImageUrl(initialUrl) ?? initialUrl;
+  const [url, setUrl] = useState(initialImageUrl);
+  const [imageLink, setImageLink] = useState(initialImageUrl);
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
+
+  function applyImageLink() {
+    const value = imageLink.trim();
+    if (!value) {
+      setUrl("");
+      setStatus("Tautan gambar dihapus. Simpan formulir untuk menerapkan perubahan.");
+      return;
+    }
+    const normalizedUrl = normalizeGoogleDriveImageUrl(value);
+    if (!normalizedUrl || !isSupportedImageUrl(normalizedUrl)) {
+      setStatus("Masukkan tautan gambar HTTPS yang valid atau tautan file Google Drive.");
+      return;
+    }
+    setUrl(normalizedUrl);
+    setImageLink(normalizedUrl);
+    setStatus("Tautan gambar siap disimpan.");
+  }
 
   async function upload(event: ChangeEvent<HTMLInputElement>) {
     const input = event.currentTarget;
@@ -60,6 +80,7 @@ export function ImageUploader({
       }
       const result = supabase.storage.from(bucket).getPublicUrl(path);
       setUrl(result.data.publicUrl);
+      setImageLink(result.data.publicUrl);
       setStatus("Gambar berhasil diunggah.");
     } catch (error) {
       console.error("Image upload could not be completed.", error);
@@ -78,11 +99,32 @@ export function ImageUploader({
       <span className="upload-hint">
         {helperText ? `${helperText} ` : ""}JPEG, PNG, atau WebP. Maksimal {maxFileSizeMB} MB.
       </span>
+      <label className="field-label" htmlFor={`${inputId}-url`}>Atau tautan gambar Google Drive
+        <input
+          id={`${inputId}-url`}
+          type="url"
+          value={imageLink}
+          onChange={(event) => {
+            setImageLink(event.target.value);
+            setUrl(event.target.value);
+            setStatus("");
+          }}
+          onBlur={applyImageLink}
+          placeholder="https://drive.google.com/file/d/..."
+          maxLength={2048}
+        />
+      </label>
+      <span className="upload-hint">
+        Untuk Google Drive, ubah akses file menjadi “Siapa saja yang memiliki link”, lalu tempel tautan berbagi.
+      </span>
+      <button className="button button-secondary" type="button" onClick={applyImageLink}>
+        Gunakan tautan gambar
+      </button>
       {url ? <a href={url} target="_blank" rel="noreferrer">Lihat foto yang tersimpan</a> : null}
       {status ? (
         <span
-          className={status.includes("berhasil") ? "form-success" : "form-error"}
-          role={status.includes("berhasil") ? "status" : "alert"}
+          className={status.includes("valid") ? "form-error" : "form-success"}
+          role={status.includes("valid") ? "alert" : "status"}
         >
           {status}
         </span>

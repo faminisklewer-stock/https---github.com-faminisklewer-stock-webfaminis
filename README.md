@@ -52,7 +52,7 @@ Marketplace fashion muslim berbasis Next.js App Router, TypeScript, Tailwind CSS
 3. Masuk ke `/admin/settings` untuk mengisi nomor WhatsApp Admin, alamat, dan tautan grup reseller. Semua tautan WhatsApp toko memakai nomor yang sama dengan pesan sesuai konteks. Tautan grup hanya dapat dibaca member aktif melalui RPC yang memeriksa hak akses di database; pengaturan lengkap hanya dapat dibaca admin.
 4. Tambahkan kategori, produk, harga, beberapa foto, dan varian bila tersedia. Tandai produk terlaris melalui formulir produk agar tampil di Beranda. Produk baru berstatus stok `CONFIRM`; website tidak menjamin ketersediaan stok fisik.
 5. Isi `/admin/testimonials` hanya dengan ulasan pelanggan asli yang sudah mendapat izin. Ulasan aktif akan tampil di Beranda setelah alur pemesanan.
-6. Bucket `product-images`, `category-images`, `banner-images`, dan `site-assets` dibuat oleh migration. Upload media storefront memerlukan akun admin.
+6. Bucket `product-images`, `category-images`, `banner-images`, dan `site-assets` dibuat oleh migration. Upload media storefront memerlukan akun admin. Kolom gambar juga menerima tautan berbagi file Google Drive: atur akses menjadi “Siapa saja yang memiliki link”, lalu tempel tautannya di kolom gambar. Jangan gunakan tautan folder; file gambar Drive yang dibagikan publik ditampilkan lewat pratinjau gambar Drive.
 
 ## Konfigurasi environment
 

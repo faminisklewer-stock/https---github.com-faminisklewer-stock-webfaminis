@@ -58,7 +58,7 @@ export function ProductForm({
           <label className="field-label">Meta description<textarea name="seo_description" maxLength={320} defaultValue={product?.seo_description ?? ""} /></label>
           <label className="field-label">Focus keyword<input name="focus_keyword" maxLength={100} defaultValue={product?.focus_keyword ?? ""} /></label>
           <label className="field-label">Canonical URL<input name="canonical_url" type="url" defaultValue={product?.canonical_url ?? ""} /></label>
-          <label className="field-label">OG image URL<input name="og_image" type="url" defaultValue={product?.og_image ?? ""} /></label>
+          <label className="field-label">URL gambar pratinjau sosial<input name="og_image" type="url" defaultValue={product?.og_image ?? ""} placeholder="Tautan gambar HTTPS atau Google Drive" /></label>
         </div>
       </details>
       <fieldset className="admin-form-section">
