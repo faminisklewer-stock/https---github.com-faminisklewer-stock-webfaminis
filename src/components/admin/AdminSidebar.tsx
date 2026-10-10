@@ -9,6 +9,7 @@ const adminLinks = [
   ["Kategori", "/admin/categories"],
   ["Carousel Beranda", "/admin/home-carousel"],
   ["Promo", "/admin/promos"],
+  ["Testimoni", "/admin/testimonials"],
   ["Pengaturan", "/admin/settings"],
 ];
 

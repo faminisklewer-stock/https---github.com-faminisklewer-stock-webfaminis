@@ -27,7 +27,7 @@ Marketplace fashion muslim berbasis Next.js App Router, TypeScript, Tailwind CSS
    npx supabase db push
    ```
 
-   Migration membuat tabel, kebijakan Row Level Security, fungsi harga/order, bucket Storage, dan delapan kategori awal.
+   Migration membuat tabel, kebijakan Row Level Security, fungsi harga/order, bucket Storage, serta kategori awal. Jalankan `supabase db push` lagi setelah mengambil migration terbaru, termasuk pengelolaan testimoni pelanggan.
 
 4. Jalankan aplikasi:
 
@@ -49,9 +49,10 @@ Marketplace fashion muslim berbasis Next.js App Router, TypeScript, Tailwind CSS
    ```
 
    Jangan sediakan endpoint publik untuk menaikkan role.
-3. Masuk ke `/admin/settings` untuk mengisi WhatsApp Admin, alamat, dan tautan grup reseller. Tautan grup hanya dapat dibaca member aktif melalui RPC yang memeriksa hak akses di database; pengaturan lengkap hanya dapat dibaca admin.
-4. Tambahkan kategori, produk, harga, foto, dan deskripsi yang sudah diverifikasi. Produk baru berstatus stok `CONFIRM`; website tidak menjamin ketersediaan stok fisik.
-5. Bucket `product-images`, `category-images`, `banner-images`, dan `site-assets` dibuat oleh migration. Upload media storefront memerlukan akun admin.
+3. Masuk ke `/admin/settings` untuk mengisi nomor WhatsApp Admin, alamat, dan tautan grup reseller. Semua tautan WhatsApp toko memakai nomor yang sama dengan pesan sesuai konteks. Tautan grup hanya dapat dibaca member aktif melalui RPC yang memeriksa hak akses di database; pengaturan lengkap hanya dapat dibaca admin.
+4. Tambahkan kategori, produk, harga, beberapa foto, dan varian bila tersedia. Tandai produk terlaris melalui formulir produk agar tampil di Beranda. Produk baru berstatus stok `CONFIRM`; website tidak menjamin ketersediaan stok fisik.
+5. Isi `/admin/testimonials` hanya dengan ulasan pelanggan asli yang sudah mendapat izin. Ulasan aktif akan tampil di Beranda setelah alur pemesanan.
+6. Bucket `product-images`, `category-images`, `banner-images`, dan `site-assets` dibuat oleh migration. Upload media storefront memerlukan akun admin.
 
 ## Konfigurasi environment
 

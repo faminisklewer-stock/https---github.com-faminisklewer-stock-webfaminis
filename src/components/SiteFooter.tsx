@@ -25,7 +25,7 @@ export async function SiteFooter() {
       </div>
       <FloatingWhatsAppButton
         number={settings?.whatsapp_admin_number}
-        message="Halo Admin Faminis Barokah, saya ingin bertanya."
+        message="Halo Admin Faminis Barokah, saya ingin bertanya tentang produk atau cara pemesanan. Mohon bantuannya."
       />
     </footer>
   );

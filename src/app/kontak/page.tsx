@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { ContactPlatformIcon, type ContactPlatform } from "@/components/ContactPlatformIcon";
 import { getSiteSettings } from "@/lib/site-settings";
 import { siteUrl } from "@/lib/site";
+import { makeWhatsAppUrl } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Kontak",
@@ -22,10 +23,6 @@ export const metadata: Metadata = {
 
 export default async function ContactPage() {
   const settings = await getSiteSettings();
-  const whatsappNumber = settings?.whatsapp_admin_number?.replace(/\D/g, "");
-  const whatsappInternational = whatsappNumber
-    ? whatsappNumber.startsWith("0") ? `62${whatsappNumber.slice(1)}` : whatsappNumber
-    : null;
   const phoneValue = settings?.phone?.replace(/[^\d+]/g, "");
   const phoneHref = phoneValue && /\d/.test(phoneValue) ? `tel:${phoneValue}` : null;
   const contacts = [
@@ -36,7 +33,10 @@ export default async function ContactPage() {
     { label: "Facebook", href: settings?.facebook_url, external: true },
     {
       label: "WhatsApp",
-      href: whatsappInternational ? `https://wa.me/${whatsappInternational}` : null,
+      href: makeWhatsAppUrl(
+        settings?.whatsapp_admin_number,
+        "Halo Admin Faminis Barokah, saya ingin bertanya tentang katalog dan cara pemesanan. Mohon bantuannya.",
+      ),
       external: true,
     },
     { label: "Telepon", href: phoneHref, external: false },

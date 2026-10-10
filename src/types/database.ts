@@ -215,6 +215,16 @@ export type PromoCard = {
   updated_at: string;
 };
 
+export type Testimonial = {
+  id: string;
+  customer_name: string;
+  content: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type HomeCarouselSlide = {
   id: string;
   title: string;
@@ -285,6 +295,7 @@ export type Database = {
       banners: Table<Banner>;
       promo_cards: Table<PromoCard>;
       home_carousel_slides: Table<HomeCarouselSlide>;
+      testimonials: Table<Testimonial>;
       seo_pages: Table<SeoPage>;
     };
     Views: {

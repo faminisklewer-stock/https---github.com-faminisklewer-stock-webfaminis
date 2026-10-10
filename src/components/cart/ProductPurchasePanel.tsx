@@ -51,7 +51,7 @@ export function ProductPurchasePanel({
             ))}
           </select>
         </label>
-      ) : <p className="muted-copy">Belum ada pilihan varian.</p>}
+      ) : null}
       {grosirPrice !== null ? (
         <label className="field-label">
           Jenis harga

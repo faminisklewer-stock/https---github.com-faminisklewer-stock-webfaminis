@@ -1,15 +1,15 @@
 import type { Category, Product, ProductImage } from "@/types/database";
-import { ImageUploader } from "./ImageUploader";
+import { ProductImagesEditor } from "./ProductImagesEditor";
 
 export function ProductForm({
   categories,
   product,
-  image,
+  images = [],
   action,
 }: {
   categories: Category[];
   product?: Product;
-  image?: ProductImage | null;
+  images?: ProductImage[];
   action: (formData: FormData) => void | Promise<void>;
 }) {
   return (
@@ -49,8 +49,7 @@ export function ProductForm({
       </fieldset>
       <fieldset className="admin-form-section">
         <legend>Foto produk</legend>
-        <ImageUploader bucket="product-images" initialUrl={image?.image_url} />
-        <label className="field-label">Alt foto<input name="image_alt" maxLength={250} defaultValue={image?.alt_text ?? ""} placeholder="Jelaskan foto produk secara singkat" /></label>
+        <ProductImagesEditor initialImages={images} />
       </fieldset>
       <details className="admin-form-section admin-optional-section">
         <summary>Pengaturan SEO (opsional)</summary>

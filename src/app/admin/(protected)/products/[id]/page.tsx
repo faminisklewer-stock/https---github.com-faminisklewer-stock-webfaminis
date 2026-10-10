@@ -19,7 +19,7 @@ export default async function EditProductPage({
   const [productResult, categoryResult, imagesResult, variantsResult] = await Promise.all([
     supabase.from("products").select("*").eq("id", id).maybeSingle(),
     supabase.from("categories").select("id, name, slug, description, image_url, seo_title, seo_description, is_active, created_at, updated_at").order("name"),
-    supabase.from("product_images").select("*").eq("product_id", id).order("sort_order").limit(1),
+    supabase.from("product_images").select("*").eq("product_id", id).order("sort_order"),
     supabase.from("product_variants").select("*").eq("product_id", id).order("created_at"),
   ]);
   if (productResult.error || categoryResult.error || imagesResult.error || variantsResult.error) {
@@ -38,7 +38,7 @@ export default async function EditProductPage({
       <ProductForm
         product={productResult.data as Product}
         categories={(categoryResult.data ?? []) as Category[]}
-        image={(imagesResult.data?.[0] as ProductImage | undefined) ?? null}
+        images={(imagesResult.data ?? []) as ProductImage[]}
         action={updateProduct}
       />
       <section className="admin-work-queue admin-variant-section">

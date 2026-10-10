@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { BrandSymbol } from "@/components/BrandSymbol";
 import { CategoryCard } from "@/components/CategoryCard";
-import { HomePromoCarousel, HomePromoCarouselProvider, type HomePromoSlide } from "@/components/HomePromoCarousel";
+import { CustomerTestimonials } from "@/components/CustomerTestimonials";
+import { HomePromoCarousel, type HomePromoSlide } from "@/components/HomePromoCarousel";
+import { ProductCard } from "@/components/ProductCard";
 import { SeoJsonLd } from "@/components/SeoJsonLd";
-import { getCategories } from "@/lib/catalog";
+import { getCategories, getProducts } from "@/lib/catalog";
 import { getSiteSettings } from "@/lib/site-settings";
 import { siteUrl } from "@/lib/site";
 import { getPublicSupabaseClient } from "@/lib/supabase/config";
+import type { Testimonial } from "@/types/database";
 
 const categoryOrder = ["daster", "mukena", "sarung", "gamis", "setelan", "kaftan", "sajadah", "baju-koko"];
 
@@ -28,24 +31,39 @@ function BenefitIcon({ type }: { type: "garment" | "price" | "stock" | "support"
 }
 
 export default async function HomePage() {
-  const [categories, settings] = await Promise.all([getCategories(), getSiteSettings()]);
+  const [categories, settings, bestSellers] = await Promise.all([
+    getCategories(),
+    getSiteSettings(),
+    getProducts({ bestSeller: true, limit: 8 }),
+  ]);
   const supabase = getPublicSupabaseClient();
   let promoLoadState: "ready" | "error" = "ready";
   let promoSlides: HomePromoSlide[] = [];
+  let testimonialsLoadState: "ready" | "error" = "ready";
+  let testimonials: Testimonial[] = [];
   if (!supabase) {
     promoLoadState = "error";
+    testimonialsLoadState = "error";
   } else {
-    const { data, error } = await supabase
-      .from("home_carousel_slides")
-      .select("id, title, image_url, destination_url")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: false });
-    if (error) {
-      console.error("Homepage promo carousel could not be loaded.", error);
+    const [slidesResult, testimonialsResult] = await Promise.all([
+      supabase
+        .from("home_carousel_slides")
+        .select("id, title, image_url, destination_url")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("testimonials")
+        .select("id, customer_name, content, sort_order, is_active, created_at, updated_at")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: false }),
+    ]);
+    if (slidesResult.error) {
+      console.error("Homepage carousel could not be loaded.", slidesResult.error);
       promoLoadState = "error";
     } else {
-      promoSlides = data.flatMap((promo) => promo.image_url
+      promoSlides = slidesResult.data.flatMap((promo) => promo.image_url
         ? [{
           id: promo.id,
           title: promo.title,
@@ -53,6 +71,12 @@ export default async function HomePage() {
           destinationUrl: promo.destination_url,
         }]
         : []);
+    }
+    if (testimonialsResult.error) {
+      console.error("Homepage customer testimonials could not be loaded.", testimonialsResult.error);
+      testimonialsLoadState = "error";
+    } else {
+      testimonials = (testimonialsResult.data ?? []) as Testimonial[];
     }
   }
 
@@ -86,8 +110,7 @@ export default async function HomePage() {
   return (
     <>
       <SeoJsonLd data={[organization, website]} />
-      <HomePromoCarouselProvider slides={promoSlides} loadState={promoLoadState}>
-        <section className="showcase-hero wrap" aria-labelledby="hero-title">
+      <section className="showcase-hero wrap" aria-labelledby="hero-title">
           <div className="showcase-copy">
             <p className="hero-kicker">Faminis Barokah</p>
             <h1 id="hero-title">Pusat Grosir &amp; Ecer Fashion Muslim</h1>
@@ -101,8 +124,8 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="showcase-photo" aria-label="Promo terbaru Faminis Barokah">
-            <HomePromoCarousel placement="hero" />
+          <div className="showcase-photo" aria-label="Gambar utama Faminis Barokah">
+            <HomePromoCarousel slides={promoSlides} loadState={promoLoadState} />
           </div>
 
           <ul className="hero-benefits" aria-label="Cara belanja di Faminis Barokah">
@@ -127,15 +150,21 @@ export default async function HomePage() {
           )}
         </section>
 
-        <section className="home-latest-products home-latest-promos wrap" aria-labelledby="newest-title">
+      <section className="home-latest-products home-best-sellers wrap" aria-labelledby="best-seller-title">
           <div className="section-heading">
-            <h2 id="newest-title">Produk terbaru &amp; promo</h2>
-            <Link href="/promo" className="text-link">Lihat semua promo</Link>
+            <h2 id="best-seller-title">Pilihan terlaris</h2>
+            <Link href="/produk" className="text-link">Lihat seluruh katalog</Link>
           </div>
-          <HomePromoCarousel placement="section" />
-        </section>
+          {bestSellers.length ? (
+            <div className="product-grid">
+              {bestSellers.map((product) => <ProductCard key={product.id} product={product} />)}
+            </div>
+          ) : (
+            <p className="inline-empty">Produk terlaris akan tampil setelah Admin menandai produk pada pengaturan katalog.</p>
+          )}
+      </section>
 
-        <section className="order-flow section-wrap" aria-labelledby="order-flow-title">
+      <section className="order-flow section-wrap" aria-labelledby="order-flow-title">
           <div className="wrap order-flow-inner">
             <div>
               <p className="section-eyebrow">Alur pemesanan</p>
@@ -147,9 +176,11 @@ export default async function HomePage() {
               <li><span className="order-step-number">03</span><strong>Tunggu konfirmasi</strong><span>Admin memeriksa stok, total akhir, dan instruksi pembayaran.</span></li>
             </ol>
           </div>
-        </section>
+      </section>
 
-        <section className="faq-section section-wrap" id="faq" aria-labelledby="faq-title">
+      <CustomerTestimonials testimonials={testimonials} loadState={testimonialsLoadState} />
+
+      <section className="faq-section section-wrap" id="faq" aria-labelledby="faq-title">
           <div className="wrap faq-layout">
             <aside className="faq-brand" aria-label="Faminis Barokah">
               <BrandSymbol className="faq-brand-symbol" />
@@ -181,9 +212,7 @@ export default async function HomePage() {
               </div>
             </div>
           </div>
-        </section>
-
-      </HomePromoCarouselProvider>
+      </section>
     </>
   );
 }

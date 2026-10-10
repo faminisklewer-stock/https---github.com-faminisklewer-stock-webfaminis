@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { ResellerBannerPopup } from "@/components/ResellerBannerPopup";
 
 export function SiteChrome({
   children,
@@ -25,6 +26,7 @@ export function SiteChrome({
       {header}
       <main id="konten-utama">{children}</main>
       {footer}
+      <ResellerBannerPopup />
     </>
   );
 }

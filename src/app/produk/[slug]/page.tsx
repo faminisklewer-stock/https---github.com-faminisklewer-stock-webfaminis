@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ProductGallery } from "@/components/ProductGallery";
 import { ProductPurchasePanel } from "@/components/cart/ProductPurchasePanel";
 import { ShareProductButton } from "@/components/ShareProductButton";
 import { SeoJsonLd } from "@/components/SeoJsonLd";
@@ -52,7 +52,15 @@ export default async function ProductDetailPage({
     OUT_OF_STOCK: "Habis menurut katalog",
     CONFIRM: "Stok perlu dikonfirmasi",
   }[product.stock_status];
-  const stockMessage = `Halo Admin Faminis Barokah,\n\nSaya ingin menanyakan ketersediaan stok:\n\nProduk: ${product.name}\nSKU: ${product.sku}\n\nApakah stok produk tersebut masih tersedia?\n\nTerima kasih.`;
+  const stockMessage = [
+    "Halo Admin Faminis Barokah, saya ingin menanyakan detail dan ketersediaan produk ini.",
+    "",
+    `Produk: ${product.name}`,
+    `SKU: ${product.sku}`,
+    `Tautan: ${productUrl}`,
+    "",
+    "Mohon bantu cek stok serta pilihan warna atau ukurannya. Terima kasih.",
+  ].join("\n");
   const schema = [
     {
       "@context": "https://schema.org",
@@ -79,8 +87,6 @@ export default async function ProductDetailPage({
       ],
     },
   ];
-  const mainImage = product.product_images[0];
-
   return (
     <div className="page-wrap product-detail-page">
       <SeoJsonLd data={schema} />
@@ -90,33 +96,7 @@ export default async function ProductDetailPage({
         <span>{product.name}</span>
       </nav>
       <div className="product-detail-layout">
-        <div className="product-gallery">
-          <div className="product-main-image">
-            {mainImage ? (
-              <Image
-                src={mainImage.image_url}
-                alt={mainImage.alt_text || product.name}
-                fill
-                priority
-                sizes="(max-width: 900px) 100vw, 55vw"
-              />
-            ) : (
-              <div className="image-placeholder detail-placeholder">
-                <span>Foto produk</span>
-                <small>Belum diunggah oleh Admin</small>
-              </div>
-            )}
-          </div>
-          {product.product_images.length > 1 ? (
-            <div className="product-thumbnails">
-              {product.product_images.slice(1).map((image) => (
-                <div className="product-thumbnail" key={image.id}>
-                  <Image src={image.image_url} alt={image.alt_text || product.name} fill sizes="100px" />
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </div>
+        <ProductGallery images={product.product_images} productName={product.name} />
         <div className="product-detail-copy">
           <Link className="product-category" href={categoryUrl}>{product.categories?.name ?? "Fashion Muslim"}</Link>
           <h1>{product.name}</h1>
@@ -140,7 +120,7 @@ export default async function ProductDetailPage({
               slug: product.slug,
               name: product.name,
               ecerPrice: product.ecer_price,
-              imageUrl: mainImage?.image_url ?? null,
+              imageUrl: product.product_images[0]?.image_url ?? null,
             }}
             variants={product.product_variants}
             grosirPrice={product.grosir_price}

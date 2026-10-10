@@ -6,6 +6,11 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/admin";
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const productImageSchema = z.object({
+  id: z.string().uuid().nullable(),
+  image_url: z.string().url().max(2048).refine((value) => value.startsWith("https://")),
+  alt_text: z.string().trim().max(250),
+});
 const productSchema = z.object({
   name: z.string().trim().min(2).max(180),
   sku: z.string().trim().min(2).max(80),
@@ -13,8 +18,7 @@ const productSchema = z.object({
   ecer_price: z.coerce.number().min(0),
   grosir_price: z.union([z.number().min(0), z.null()]),
   grosir_min_qty: z.coerce.number().int().min(1).max(99),
-  image_url: z.union([z.string().url().max(2048), z.literal("")]).optional(),
-  image_alt: z.string().trim().max(250).optional(),
+  product_images: z.array(productImageSchema).max(20),
   stock_status: z.enum(["AVAILABLE", "LOW_STOCK", "OUT_OF_STOCK", "CONFIRM"]),
   seo_title: z.string().trim().max(180).optional(),
   seo_description: z.string().trim().max(320).optional(),
@@ -26,6 +30,12 @@ const productSchema = z.object({
 });
 
 function readProductForm(formData: FormData) {
+  let productImages: unknown;
+  try {
+    productImages = JSON.parse(String(formData.get("product_images") ?? "[]"));
+  } catch {
+    productImages = null;
+  }
   return productSchema.safeParse({
     name: formData.get("name"),
     sku: formData.get("sku"),
@@ -35,8 +45,7 @@ function readProductForm(formData: FormData) {
       ? Number(formData.get("grosir_price"))
       : null,
     grosir_min_qty: formData.get("grosir_min_qty"),
-    image_url: formData.get("image_url") || "",
-    image_alt: formData.get("image_alt") || "",
+    product_images: productImages,
     stock_status: formData.get("stock_status") || "CONFIRM",
     seo_title: formData.get("seo_title") || "",
     seo_description: formData.get("seo_description") || "",
@@ -109,13 +118,13 @@ export async function createProduct(formData: FormData) {
     console.error("Admin could not create product.", error);
     redirect("/admin/products?error=save");
   }
-  if (values.image_url && product) {
-    const { error: imageError } = await supabase.from("product_images").insert({
+  if (product && values.product_images.length) {
+    const { error: imageError } = await supabase.from("product_images").insert(values.product_images.map((image, index) => ({
       product_id: product.id,
-      image_url: values.image_url,
-      alt_text: values.image_alt || values.name,
-      sort_order: 0,
-    });
+      image_url: image.image_url,
+      alt_text: image.alt_text || values.name,
+      sort_order: index,
+    })));
     if (imageError) {
       console.error("Product was created but its image could not be saved.", imageError);
       redirect("/admin/products?error=image");
@@ -157,26 +166,38 @@ export async function updateProduct(formData: FormData) {
     redirect(`/admin/products/${id.data}?error=save`);
   }
   const { data: existingImages, error: imageReadError } = await supabase
-    .from("product_images").select("id, image_url, sort_order").eq("product_id", id.data).order("sort_order");
+    .from("product_images").select("id").eq("product_id", id.data);
   if (imageReadError) {
     console.error("Updated product image could not be checked.", imageReadError);
     redirect(`/admin/products/${id.data}?error=image`);
   }
-  if (values.image_url && existingImages?.[0]?.image_url !== values.image_url) {
-    const primaryImage = existingImages?.[0];
-    const { error: imageError } = primaryImage
-      ? await supabase.from("product_images").update({
-          image_url: values.image_url,
-          alt_text: values.image_alt || values.name,
-        }).eq("id", primaryImage.id)
-      : await supabase.from("product_images").insert({
-          product_id: id.data,
-          image_url: values.image_url,
-          alt_text: values.image_alt || values.name,
-          sort_order: 0,
-        });
-    if (imageError) {
-      console.error("Updated product photo could not be saved.", imageError);
+  const existingImageIds = new Set((existingImages ?? []).map((image) => image.id));
+  const submittedImageIds = values.product_images.flatMap((image) => image.id ? [image.id] : []);
+  if (
+    new Set(submittedImageIds).size !== submittedImageIds.length
+    || submittedImageIds.some((imageId) => !existingImageIds.has(imageId))
+  ) {
+    redirect(`/admin/products/${id.data}?error=invalid`);
+  }
+  if (values.product_images.length) {
+    const imageRows = values.product_images.map((image, index) => ({
+      ...(image.id ? { id: image.id } : {}),
+      product_id: id.data,
+      image_url: image.image_url,
+      alt_text: image.alt_text || values.name,
+      sort_order: index,
+    }));
+    const { error: imageSaveError } = await supabase.from("product_images").upsert(imageRows);
+    if (imageSaveError) {
+      console.error("Updated product photos could not be saved.", imageSaveError);
+      redirect(`/admin/products/${id.data}?error=image`);
+    }
+  }
+  const removedImageIds = [...existingImageIds].filter((imageId) => !submittedImageIds.includes(imageId));
+  if (removedImageIds.length) {
+    const { error: imageDeleteError } = await supabase.from("product_images").delete().in("id", removedImageIds);
+    if (imageDeleteError) {
+      console.error("Removed product photos could not be deleted.", imageDeleteError);
       redirect(`/admin/products/${id.data}?error=image`);
     }
   }
@@ -634,4 +655,60 @@ export async function updateSiteSettings(formData: FormData) {
   }
   revalidatePath("/", "layout");
   redirect("/admin/settings?success=updated");
+}
+
+const testimonialSchema = z.object({
+  customer_name: z.string().trim().min(2).max(100),
+  content: z.string().trim().min(5).max(1200),
+  sort_order: z.coerce.number().int().min(-100000).max(100000),
+  is_active: z.boolean(),
+});
+
+function readTestimonialForm(formData: FormData) {
+  return testimonialSchema.safeParse({
+    customer_name: formData.get("customer_name"),
+    content: formData.get("content"),
+    sort_order: formData.get("sort_order"),
+    is_active: formData.get("is_active") === "on",
+  });
+}
+
+export async function createTestimonial(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const parsed = readTestimonialForm(formData);
+  if (!parsed.success) redirect("/admin/testimonials?error=invalid");
+  const { error } = await supabase.from("testimonials").insert(parsed.data);
+  if (error) {
+    console.error("Admin could not create testimonial.", error);
+    redirect("/admin/testimonials?error=save");
+  }
+  revalidatePath("/");
+  redirect("/admin/testimonials?success=created");
+}
+
+export async function updateTestimonial(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = z.string().uuid().safeParse(formData.get("id"));
+  const parsed = readTestimonialForm(formData);
+  if (!id.success || !parsed.success) redirect("/admin/testimonials?error=invalid");
+  const { error } = await supabase.from("testimonials").update(parsed.data).eq("id", id.data);
+  if (error) {
+    console.error("Admin could not update testimonial.", error);
+    redirect("/admin/testimonials?error=save");
+  }
+  revalidatePath("/");
+  redirect("/admin/testimonials?success=updated");
+}
+
+export async function deleteTestimonial(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = z.string().uuid().safeParse(formData.get("id"));
+  if (!id.success) redirect("/admin/testimonials?error=invalid");
+  const { error } = await supabase.from("testimonials").delete().eq("id", id.data);
+  if (error) {
+    console.error("Admin could not delete testimonial.", error);
+    redirect("/admin/testimonials?error=delete");
+  }
+  revalidatePath("/");
+  redirect("/admin/testimonials?success=deleted");
 }

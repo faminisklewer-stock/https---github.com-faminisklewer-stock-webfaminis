@@ -50,7 +50,7 @@ export default async function AdminSettingsPage({
         <form action={updateSiteSettings} className="admin-form admin-settings-form">
           <fieldset className="admin-form-section">
             <legend>Kontak pelanggan</legend>
-            <p className="form-help">Kontak ini digunakan untuk pertanyaan stok dan komunikasi pesanan.</p>
+            <p className="form-help">Semua tombol WhatsApp di toko memakai nomor ini. Masukkan nomor lokal atau internasional, lalu pesan otomatis menyesuaikan halaman dan keperluan pelanggan.</p>
             <div className="field-grid">
               <label className="field-label">WhatsApp Admin<input name="whatsapp_admin_number" type="tel" defaultValue={settings.whatsapp_admin_number ?? ""} required /></label>
               <label className="field-label">Nomor telepon<input name="phone" type="tel" defaultValue={settings.phone ?? ""} /></label>
