@@ -7,9 +7,8 @@ import { ProductCard } from "@/components/ProductCard";
 import { SeoJsonLd } from "@/components/SeoJsonLd";
 import { getCategories, getProducts } from "@/lib/catalog";
 import { getSiteSettings } from "@/lib/site-settings";
+import { getHomepageContent } from "@/lib/storefront-content";
 import { siteUrl } from "@/lib/site";
-import { getPublicSupabaseClient } from "@/lib/supabase/config";
-import type { Testimonial } from "@/types/database";
 
 const categoryOrder = ["daster", "mukena", "sarung", "gamis", "setelan", "kaftan", "sajadah", "baju-koko"];
 
@@ -31,54 +30,29 @@ function BenefitIcon({ type }: { type: "garment" | "price" | "stock" | "support"
 }
 
 export default async function HomePage() {
-  const [categories, settings, bestSellers] = await Promise.all([
+  const [categories, settings, bestSellers, homepageContent] = await Promise.all([
     getCategories(),
     getSiteSettings(),
     getProducts({ bestSeller: true, limit: 8 }),
+    getHomepageContent(),
   ]);
-  const supabase = getPublicSupabaseClient();
-  let promoLoadState: "ready" | "error" = "ready";
-  let promoSlides: HomePromoSlide[] = [];
-  let testimonialsLoadState: "ready" | "error" = "ready";
-  let testimonials: Testimonial[] = [];
-  if (!supabase) {
-    promoLoadState = "error";
-    testimonialsLoadState = "error";
-  } else {
-    const [slidesResult, testimonialsResult] = await Promise.all([
-      supabase
-        .from("home_carousel_slides")
-        .select("id, title, image_url, destination_url")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("testimonials")
-        .select("id, customer_name, content, sort_order, is_active, created_at, updated_at")
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: false }),
-    ]);
-    if (slidesResult.error) {
-      console.error("Homepage carousel could not be loaded.", slidesResult.error);
-      promoLoadState = "error";
-    } else {
-      promoSlides = slidesResult.data.flatMap((promo) => promo.image_url
-        ? [{
-          id: promo.id,
-          title: promo.title,
-          imageUrl: promo.image_url,
-          destinationUrl: promo.destination_url,
-        }]
-        : []);
-    }
-    if (testimonialsResult.error) {
-      console.error("Homepage customer testimonials could not be loaded.", testimonialsResult.error);
-      testimonialsLoadState = "error";
-    } else {
-      testimonials = (testimonialsResult.data ?? []) as Testimonial[];
-    }
+  if (homepageContent.slidesError) {
+    console.error("Homepage carousel could not be loaded.", homepageContent.slidesError);
   }
+  if (homepageContent.testimonialsError) {
+    console.error("Homepage customer testimonials could not be loaded.", homepageContent.testimonialsError);
+  }
+  const promoSlides: HomePromoSlide[] = (homepageContent.slides ?? []).flatMap((promo) => promo.image_url
+    ? [{
+      id: promo.id,
+      title: promo.title,
+      imageUrl: promo.image_url,
+      destinationUrl: promo.destination_url,
+    }]
+    : []);
+  const promoLoadState = homepageContent.slidesError ? "error" : "ready";
+  const testimonials = homepageContent.testimonials ?? [];
+  const testimonialsLoadState = homepageContent.testimonialsError ? "error" : "ready";
 
   const sortedCategories = [...categories].sort((first, second) => {
     const firstRank = categoryOrder.indexOf(first.slug);

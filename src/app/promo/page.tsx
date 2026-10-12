@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getPublicSupabaseClient } from "@/lib/supabase/config";
+import { getPublicPromoCards } from "@/lib/storefront-content";
 import { siteUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -23,30 +23,10 @@ export const metadata: Metadata = {
 };
 
 export default async function PromoPage() {
-  const supabase = getPublicSupabaseClient();
-  let promos: {
-    id: string;
-    title: string;
-    description: string | null;
-    image_url: string | null;
-    destination_url: string;
-  }[] = [];
-  let loadError = false;
-  if (!supabase) {
-    loadError = true;
-  } else {
-    const result = await supabase.from("promo_cards")
-      .select("id, title, description, image_url, destination_url")
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: false });
-    if (result.error) {
-      console.error("Public promo cards could not be loaded.", result.error);
-      loadError = true;
-    } else {
-      promos = result.data;
-    }
-  }
+  const { promos: cachedPromos, errorMessage } = await getPublicPromoCards();
+  if (errorMessage) console.error("Public promo cards could not be loaded.", errorMessage);
+  const promos = cachedPromos ?? [];
+  const loadError = errorMessage !== null;
 
   return (
     <main className="promo-page wrap">

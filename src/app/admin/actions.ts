@@ -1,10 +1,13 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin";
+import { catalogCacheTag } from "@/lib/catalog";
 import { isSupportedImageUrl, normalizeGoogleDriveImageUrl } from "@/lib/image-url";
+import { settingsCacheTag } from "@/lib/site-settings";
+import { storefrontContentCacheTags } from "@/lib/storefront-content";
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const imageUrlSchema = z.string().trim().url().max(2048)
@@ -141,6 +144,7 @@ export async function createProduct(formData: FormData) {
       redirect("/admin/products?error=image");
     }
   }
+  updateTag(catalogCacheTag);
   revalidatePath("/");
   revalidatePath("/produk");
   revalidatePath("/produk/[slug]", "page");
@@ -223,6 +227,7 @@ export async function updateProduct(formData: FormData) {
       redirect(`/admin/products/${id.data}?error=image`);
     }
   }
+  updateTag(catalogCacheTag);
   revalidatePath("/");
   revalidatePath("/produk");
   revalidatePath("/produk/[slug]", "page");
@@ -238,6 +243,7 @@ export async function deleteProduct(formData: FormData) {
     console.error("Admin could not delete product.", error);
     redirect("/admin/products?error=delete");
   }
+  updateTag(catalogCacheTag);
   revalidatePath("/");
   revalidatePath("/produk");
   redirect("/admin/products?success=deleted");
@@ -253,6 +259,7 @@ export async function setProductStock(formData: FormData) {
     console.error("Admin could not update product stock status.", error);
     redirect("/admin/products?error=save");
   }
+  updateTag(catalogCacheTag);
   revalidatePath("/");
   revalidatePath("/produk");
   redirect("/admin/products?success=updated");
@@ -305,6 +312,7 @@ export async function saveProductVariant(formData: FormData) {
     console.error("Admin could not save product variant.", result.error);
     redirect(`/admin/products/${product_id}?error=variant`);
   }
+  updateTag(catalogCacheTag);
   revalidatePath("/");
   revalidatePath("/produk");
   redirect(`/admin/products/${product_id}?success=variant`);
@@ -321,6 +329,7 @@ export async function deleteProductVariant(formData: FormData) {
     console.error("Admin could not delete product variant.", error);
     redirect(`/admin/products/${productId.data}?error=variant`);
   }
+  updateTag(catalogCacheTag);
   revalidatePath("/");
   revalidatePath("/produk");
   redirect(`/admin/products/${productId.data}?success=variant`);
@@ -361,6 +370,7 @@ export async function createCategory(formData: FormData) {
     console.error("Admin could not create category.", error);
     redirect("/admin/categories?error=save");
   }
+  updateTag(catalogCacheTag);
   revalidatePath("/");
   redirect("/admin/categories?success=created");
 }
@@ -383,6 +393,7 @@ export async function updateCategory(formData: FormData) {
     console.error("Admin could not update category.", error);
     redirect(`/admin/categories?error=save`);
   }
+  updateTag(catalogCacheTag);
   revalidatePath("/");
   redirect("/admin/categories?success=updated");
 }
@@ -396,6 +407,7 @@ export async function deleteCategory(formData: FormData) {
     console.error("Admin could not delete category.", error);
     redirect("/admin/categories?error=delete");
   }
+  updateTag(catalogCacheTag);
   revalidatePath("/");
   redirect("/admin/categories?success=deleted");
 }
@@ -548,6 +560,7 @@ export async function createHomeCarouselSlide(formData: FormData) {
     console.error("Admin could not create homepage carousel slide.", error);
     redirect("/admin/home-carousel?error=save");
   }
+  updateTag(storefrontContentCacheTags.home);
   revalidatePath("/");
   redirect("/admin/home-carousel?success=created");
 }
@@ -562,6 +575,7 @@ export async function updateHomeCarouselSlide(formData: FormData) {
     console.error("Admin could not update homepage carousel slide.", error);
     redirect("/admin/home-carousel?error=save");
   }
+  updateTag(storefrontContentCacheTags.home);
   revalidatePath("/");
   redirect("/admin/home-carousel?success=updated");
 }
@@ -575,6 +589,7 @@ export async function deleteHomeCarouselSlide(formData: FormData) {
     console.error("Admin could not delete homepage carousel slide.", error);
     redirect("/admin/home-carousel?error=delete");
   }
+  updateTag(storefrontContentCacheTags.home);
   revalidatePath("/");
   redirect("/admin/home-carousel?success=deleted");
 }
@@ -591,6 +606,7 @@ export async function createPromoCard(formData: FormData) {
     console.error("Admin could not create promo card.", error);
     redirect("/admin/promos?error=save");
   }
+  updateTag(storefrontContentCacheTags.promos);
   revalidatePath("/promo");
   redirect("/admin/promos?success=created");
 }
@@ -608,6 +624,7 @@ export async function updatePromoCard(formData: FormData) {
     console.error("Admin could not update promo card.", error);
     redirect("/admin/promos?error=save");
   }
+  updateTag(storefrontContentCacheTags.promos);
   revalidatePath("/promo");
   redirect("/admin/promos?success=updated");
 }
@@ -621,6 +638,7 @@ export async function deletePromoCard(formData: FormData) {
     console.error("Admin could not delete promo card.", error);
     redirect("/admin/promos?error=delete");
   }
+  updateTag(storefrontContentCacheTags.promos);
   revalidatePath("/promo");
   redirect("/admin/promos?success=deleted");
 }
@@ -675,6 +693,7 @@ export async function updateSiteSettings(formData: FormData) {
     console.error("Admin could not update site settings.", error);
     redirect("/admin/settings?error=save");
   }
+  updateTag(settingsCacheTag);
   revalidatePath("/", "layout");
   redirect("/admin/settings?success=updated");
 }
@@ -704,6 +723,7 @@ export async function createTestimonial(formData: FormData) {
     console.error("Admin could not create testimonial.", error);
     redirect("/admin/testimonials?error=save");
   }
+  updateTag(storefrontContentCacheTags.home);
   revalidatePath("/");
   redirect("/admin/testimonials?success=created");
 }
@@ -718,6 +738,7 @@ export async function updateTestimonial(formData: FormData) {
     console.error("Admin could not update testimonial.", error);
     redirect("/admin/testimonials?error=save");
   }
+  updateTag(storefrontContentCacheTags.home);
   revalidatePath("/");
   redirect("/admin/testimonials?success=updated");
 }
@@ -731,6 +752,7 @@ export async function deleteTestimonial(formData: FormData) {
     console.error("Admin could not delete testimonial.", error);
     redirect("/admin/testimonials?error=delete");
   }
+  updateTag(storefrontContentCacheTags.home);
   revalidatePath("/");
   redirect("/admin/testimonials?success=deleted");
 }

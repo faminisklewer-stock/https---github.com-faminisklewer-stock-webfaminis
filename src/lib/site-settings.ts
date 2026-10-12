@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { getPublicSupabaseClient } from "@/lib/supabase/config";
 import type { PublicSiteSettings } from "@/types/database";
 
@@ -17,8 +18,9 @@ type StorefrontSettings = Pick<
 >;
 
 let missingStoreDescriptionMigrationLogged = false;
+export const settingsCacheTag = "storefront-settings";
 
-export async function getSiteSettings(): Promise<StorefrontSettings | null> {
+const getCachedSiteSettings = unstable_cache(async (): Promise<StorefrontSettings | null> => {
   const supabase = getPublicSupabaseClient();
   if (!supabase) return null;
 
@@ -43,4 +45,11 @@ export async function getSiteSettings(): Promise<StorefrontSettings | null> {
   }
   if (error) throw new Error(`Gagal memuat pengaturan situs: ${error.message}`);
   return data;
+}, ["storefront-site-settings-v1"], {
+  tags: [settingsCacheTag],
+  revalidate: 300,
+});
+
+export function getSiteSettings() {
+  return getCachedSiteSettings();
 }

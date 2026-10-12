@@ -1,6 +1,9 @@
+import { unstable_cache } from "next/cache";
 import { getPublicSupabaseClient } from "@/lib/supabase/config";
 import type { Category, Product, ProductImage, ProductVariant } from "@/types/database";
 
+export const catalogCacheTag = "storefront-catalog";
+const catalogCacheSeconds = 300;
 const productSelection =
   "id, category_id, name, slug, sku, ecer_price, grosir_price, grosir_min_qty, stock, stock_status, is_active, is_featured, is_best_seller, seo_title, seo_description, focus_keyword, canonical_url, og_image, created_at, updated_at";
 
@@ -71,7 +74,7 @@ function buildFallbackProducts(): CatalogProduct[] {
   return [FALLBACK_PRODUCT];
 }
 
-export async function getCategories() {
+const getCachedCategories = unstable_cache(async () => {
   const supabase = getPublicSupabaseClient();
   if (!supabase) return buildFallbackCategories();
 
@@ -83,9 +86,16 @@ export async function getCategories() {
 
   if (error) throw new Error(`Gagal memuat kategori: ${error.message}`);
   return (data ?? []) as Category[];
+}, ["storefront-categories-v1"], {
+  tags: [catalogCacheTag],
+  revalidate: catalogCacheSeconds,
+});
+
+export function getCategories() {
+  return getCachedCategories();
 }
 
-export async function getProducts(options: {
+type ProductQueryOptions = {
   categorySlug?: string;
   search?: string;
   sort?: string;
@@ -96,7 +106,9 @@ export async function getProducts(options: {
   minPrice?: number;
   maxPrice?: number;
   stockStatus?: Product["stock_status"];
-} = {}) {
+};
+
+async function queryProducts(options: ProductQueryOptions) {
   const supabase = getPublicSupabaseClient();
   if (!supabase) {
     const sample = buildFallbackProducts().filter((product) => {
@@ -165,7 +177,20 @@ export async function getProducts(options: {
   return result;
 }
 
-export async function getProductBySlug(slug: string) {
+const getCachedProducts = unstable_cache(
+  async (options: ProductQueryOptions) => queryProducts(options),
+  ["storefront-products-v1"],
+  {
+    tags: [catalogCacheTag],
+    revalidate: catalogCacheSeconds,
+  },
+);
+
+export function getProducts(options: ProductQueryOptions = {}) {
+  return options.search ? queryProducts(options) : getCachedProducts(options);
+}
+
+const getCachedProductBySlug = unstable_cache(async (slug: string) => {
   const supabase = getPublicSupabaseClient();
   if (!supabase) {
     const fallback = buildFallbackProducts().find((product) => product.slug === slug);
@@ -192,9 +217,16 @@ export async function getProductBySlug(slug: string) {
     product_images: [...product.product_images].sort((a, b) => a.sort_order - b.sort_order),
     product_variants: (product.product_variants ?? []).filter((variant) => variant.is_active),
   };
+}, ["storefront-product-by-slug-v1"], {
+  tags: [catalogCacheTag],
+  revalidate: catalogCacheSeconds,
+});
+
+export function getProductBySlug(slug: string) {
+  return getCachedProductBySlug(slug);
 }
 
-export async function getCategoryBySlug(slug: string) {
+const getCachedCategoryBySlug = unstable_cache(async (slug: string) => {
   const supabase = getPublicSupabaseClient();
   if (!supabase) {
     return buildFallbackCategories().find((category) => category.slug === slug) ?? null;
@@ -209,6 +241,13 @@ export async function getCategoryBySlug(slug: string) {
 
   if (error) throw new Error(`Gagal memuat kategori: ${error.message}`);
   return data as Category | null;
+}, ["storefront-category-by-slug-v1"], {
+  tags: [catalogCacheTag],
+  revalidate: catalogCacheSeconds,
+});
+
+export function getCategoryBySlug(slug: string) {
+  return getCachedCategoryBySlug(slug);
 }
 
 export async function getAllActiveSlugs() {
