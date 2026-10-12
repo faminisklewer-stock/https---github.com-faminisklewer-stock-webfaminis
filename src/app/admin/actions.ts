@@ -198,10 +198,21 @@ export async function updateProduct(formData: FormData) {
       alt_text: image.alt_text || values.name,
       sort_order: index,
     }));
-    const { error: imageSaveError } = await supabase.from("product_images").upsert(imageRows);
-    if (imageSaveError) {
-      console.error("Updated product photos could not be saved.", imageSaveError);
-      redirect(`/admin/products/${id.data}?error=image`);
+    const existingImageRows = imageRows.filter((image) => "id" in image);
+    const newImageRows = imageRows.filter((image) => !("id" in image));
+    if (existingImageRows.length) {
+      const { error: imageUpdateError } = await supabase.from("product_images").upsert(existingImageRows);
+      if (imageUpdateError) {
+        console.error("Updated product photos could not be saved.", imageUpdateError);
+        redirect(`/admin/products/${id.data}?error=image`);
+      }
+    }
+    if (newImageRows.length) {
+      const { error: imageInsertError } = await supabase.from("product_images").insert(newImageRows);
+      if (imageInsertError) {
+        console.error("New product photos could not be saved.", imageInsertError);
+        redirect(`/admin/products/${id.data}?error=image`);
+      }
     }
   }
   const removedImageIds = [...existingImageIds].filter((imageId) => !submittedImageIds.includes(imageId));
