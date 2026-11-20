@@ -71,3 +71,113 @@ export function AdminLoginForm({ redirectTo = "/admin" }: { redirectTo?: string 
     </form>
   );
 }
+
+const customerLoginSchema = z.object({
+  email: z.string().trim().email(),
+  password: z.string().min(6),
+});
+
+export function CustomerAuthForm({ mode }: { mode: "login" | "register" }) {
+  const router = useRouter();
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function handleGoogle() {
+    setError("");
+    setBusy(true);
+    try {
+      const supabase = getBrowserSupabaseClient();
+      const { error: authError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/auth/callback?next=/akun` },
+      });
+      if (authError) setError("Google belum berhasil terhubung. Coba lagi atau gunakan email.");
+    } catch (caught) {
+      console.error("Google login could not be started.", caught);
+      setError("Google belum dapat dikonfigurasi.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setBusy(true);
+    const values = Object.fromEntries(new FormData(event.currentTarget).entries());
+    try {
+      const parsed = customerLoginSchema.safeParse(values);
+      if (!parsed.success) {
+        setError("Masukkan email dan password minimal 6 karakter.");
+        return;
+      }
+      const supabase = getBrowserSupabaseClient();
+      if (mode === "register") {
+        const fullName = String(values.full_name ?? "").trim();
+        if (fullName.length < 2) {
+          setError("Nama lengkap minimal 2 karakter.");
+          return;
+        }
+        const { error: authError } = await supabase.auth.signUp({
+          email: parsed.data.email,
+          password: parsed.data.password,
+          options: {
+            data: { full_name: fullName },
+            emailRedirectTo: `${window.location.origin}/auth/callback?next=/akun`,
+          },
+        });
+        if (authError) {
+          setError(authError.message === "User already registered"
+            ? "Email ini sudah terdaftar. Silakan masuk."
+            : "Pendaftaran belum berhasil. Coba lagi.");
+          return;
+        }
+        router.push("/akun");
+        router.refresh();
+      } else {
+        const { error: authError } = await supabase.auth.signInWithPassword(parsed.data);
+        if (authError) {
+          setError("Email atau password tidak sesuai.");
+          return;
+        }
+        router.push("/akun");
+        router.refresh();
+      }
+    } catch (caught) {
+      console.error("Customer auth could not be submitted.", caught);
+      setError("Koneksi layanan belum tersedia.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="customer-auth">
+      <button type="button" className="button button-secondary button-wide google-auth-button" onClick={handleGoogle} disabled={busy}>
+        <span aria-hidden="true">G</span>
+        <span>{busy ? "Menghubungkan..." : "Lanjutkan dengan Google"}</span>
+      </button>
+      <div className="auth-divider"><span>atau gunakan email</span></div>
+      <form className="auth-form" onSubmit={handleSubmit} noValidate aria-busy={busy}>
+        {mode === "register" ? (
+          <label className="field-label">
+            Nama lengkap
+            <input name="full_name" type="text" autoComplete="name" placeholder="Nama sesuai akun" required />
+          </label>
+        ) : null}
+        <label className="field-label">
+          Email
+          <input name="email" type="email" autoComplete="email" placeholder="nama@email.com" required />
+        </label>
+        <label className="field-label">
+          Password
+          <input name="password" type="password" autoComplete={mode === "register" ? "new-password" : "current-password"} minLength={6} placeholder="Minimal 6 karakter" required />
+        </label>
+        {error ? <p className="form-error" role="alert">{error}</p> : null}
+        <button type="submit" className="button button-primary button-wide" disabled={busy}>
+          {busy ? "Memproses..." : mode === "register" ? "Daftar member" : "Masuk"}
+        </button>
+      </form>
+    </div>
+  );
+}

@@ -8,7 +8,7 @@ import { SeoJsonLd } from "@/components/SeoJsonLd";
 import { getCategories, getProducts } from "@/lib/catalog";
 import { getSiteSettings } from "@/lib/site-settings";
 import { getHomepageContent } from "@/lib/storefront-content";
-import { siteUrl } from "@/lib/site";
+import { normalizePublicUrl, siteUrl } from "@/lib/site";
 
 const categoryOrder = ["daster", "mukena", "sarung", "gamis", "setelan", "kaftan", "sajadah", "baju-koko"];
 
@@ -47,7 +47,7 @@ export default async function HomePage() {
       id: promo.id,
       title: promo.title,
       imageUrl: promo.image_url,
-      destinationUrl: promo.destination_url,
+      destinationUrl: normalizePublicUrl(promo.destination_url),
     }]
     : []);
   const promoLoadState = homepageContent.slidesError ? "error" : "ready";

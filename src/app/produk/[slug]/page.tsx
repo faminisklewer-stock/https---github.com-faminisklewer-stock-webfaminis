@@ -9,7 +9,7 @@ import { StockNotice } from "@/components/StockNotice";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { getProductBySlug } from "@/lib/catalog";
 import { formatRupiah } from "@/lib/format";
-import { siteUrl } from "@/lib/site";
+import { normalizePublicUrl, siteUrl } from "@/lib/site";
 import { getSiteSettings } from "@/lib/site-settings";
 
 export async function generateMetadata({
@@ -23,7 +23,7 @@ export async function generateMetadata({
 
   const title = product.seo_title || product.name;
   const description = product.seo_description || `${product.name} tersedia di katalog Faminis Barokah. Hubungi Admin untuk detail dan konfirmasi stok.`;
-  const url = product.canonical_url || `${siteUrl}/produk/${product.slug}`;
+  const url = normalizePublicUrl(product.canonical_url || `${siteUrl}/produk/${product.slug}`);
   const socialImage = product.og_image || product.product_images[0]?.image_url;
   return {
     title,

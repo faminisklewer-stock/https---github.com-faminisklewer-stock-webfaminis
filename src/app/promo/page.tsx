@@ -2,7 +2,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getPublicPromoCards } from "@/lib/storefront-content";
-import { siteUrl } from "@/lib/site";
+import { normalizePublicUrl, siteUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -64,7 +64,7 @@ export default async function PromoPage() {
                   <h2>{promo.title}</h2>
                   {promo.description ? <p>{promo.description}</p> : null}
                 </div>
-                <a className="button button-primary promo-card-action" href={promo.destination_url} target="_blank" rel="noopener noreferrer">
+                <a className="button button-primary promo-card-action" href={normalizePublicUrl(promo.destination_url)} target="_blank" rel="noopener noreferrer">
                   Lihat Detail Promo
                 </a>
               </div>

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState, type KeyboardEvent, type TouchEvent } from "react";
+import { normalizePublicUrl } from "@/lib/site";
 
 export type HomePromoSlide = {
   id: string;
@@ -98,7 +99,7 @@ export function HomePromoCarousel({
       >
         <a
           className="home-promo-carousel-link"
-          href={slide.destinationUrl}
+          href={normalizePublicUrl(slide.destinationUrl)}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Buka ${slide.title}`}

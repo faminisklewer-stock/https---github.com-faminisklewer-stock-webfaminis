@@ -11,6 +11,8 @@ const links = [
   { label: "Beranda", href: "/" },
   { label: "Katalog", href: "/produk" },
   { label: "Promo", href: "/promo" },
+  { label: "Akun member", href: "/akun" },
+  { label: "Keranjang", href: "/keranjang" },
   { label: "Kontak", href: "/kontak" },
 ];
 
@@ -45,6 +47,10 @@ export function SiteHeader() {
         </nav>
 
         <div className="header-actions">
+          <Link className="header-action" href="/akun" aria-label="Akun member">
+            <Icon name="user" />
+            <span className="cart-label">Akun</span>
+          </Link>
           <Link className="header-action cart-link" href="/keranjang" aria-label="Keranjang">
             <Icon name="bag" />
             <span className="cart-label">Keranjang</span>

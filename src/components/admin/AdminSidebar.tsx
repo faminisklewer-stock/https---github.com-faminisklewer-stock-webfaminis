@@ -10,6 +10,7 @@ const adminLinks = [
   ["Carousel Beranda", "/admin/home-carousel"],
   ["Promo", "/admin/promos"],
   ["Testimoni", "/admin/testimonials"],
+  ["Poin & Voucher", "/admin/member-points"],
   ["Pengaturan", "/admin/settings"],
 ];
 

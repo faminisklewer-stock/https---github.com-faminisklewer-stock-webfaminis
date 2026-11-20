@@ -251,6 +251,66 @@ type SeoPage = {
   updated_at: string;
 };
 
+export type MemberPointAccount = {
+  user_id: string;
+  balance: number;
+  updated_at: string;
+};
+
+export type MemberPointLedger = {
+  id: string;
+  user_id: string;
+  transaction_id: string | null;
+  ledger_type: "EARN" | "REDEEM" | "ADJUSTMENT" | "VOID";
+  points: number;
+  balance_before: number;
+  balance_after: number;
+  description: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
+export type MemberTransaction = {
+  id: string;
+  user_id: string;
+  reference: string;
+  purchase_date: string;
+  paid_at: string | null;
+  gross_total: number;
+  status: "PENDING" | "PAID" | "CANCELLED";
+  points_awarded: number;
+  source: "ADMIN" | "WEBSITE" | "WHATSAPP";
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MemberTransactionItem = {
+  id: string;
+  transaction_id: string;
+  product_id: string | null;
+  product_name: string;
+  sku: string | null;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+  created_at: string;
+};
+
+export type MemberVoucher = {
+  id: string;
+  user_id: string;
+  code: string;
+  value: number;
+  status: "ACTIVE" | "USED" | "VOID";
+  redeemed_at: string;
+  expires_at: string | null;
+  used_at: string | null;
+  used_reference: string | null;
+  created_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -297,6 +357,11 @@ export type Database = {
       home_carousel_slides: Table<HomeCarouselSlide>;
       testimonials: Table<Testimonial>;
       seo_pages: Table<SeoPage>;
+      member_point_accounts: Table<MemberPointAccount>;
+      member_point_ledger: Table<MemberPointLedger>;
+      member_transactions: Table<MemberTransaction>;
+      member_transaction_items: Table<MemberTransactionItem>;
+      member_vouchers: Table<MemberVoucher>;
     };
     Views: {
       public_site_settings: {
@@ -307,6 +372,10 @@ export type Database = {
     Functions: {
       get_reseller_group_url: { Args: Record<string, never>; Returns: string };
       get_admin_reseller_group_url: { Args: Record<string, never>; Returns: string | null };
+      complete_member_transaction: { Args: { p_transaction_id: string }; Returns: number };
+      cancel_member_transaction: { Args: { p_transaction_id: string }; Returns: undefined };
+      redeem_member_voucher: { Args: Record<string, never>; Returns: string };
+      ensure_member_point_account: { Args: { p_user_id: string }; Returns: undefined };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

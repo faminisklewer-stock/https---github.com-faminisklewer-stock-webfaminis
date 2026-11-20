@@ -7,6 +7,7 @@ import { requireAdmin } from "@/lib/admin";
 import { catalogCacheTag } from "@/lib/catalog";
 import { isSupportedImageUrl, normalizeGoogleDriveImageUrl } from "@/lib/image-url";
 import { settingsCacheTag } from "@/lib/site-settings";
+import { normalizePublicUrl } from "@/lib/site";
 import { storefrontContentCacheTags } from "@/lib/storefront-content";
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -124,7 +125,7 @@ export async function createProduct(formData: FormData) {
     seo_title: values.seo_title || null,
     seo_description: values.seo_description || null,
     focus_keyword: values.focus_keyword || null,
-    canonical_url: values.canonical_url || null,
+    canonical_url: values.canonical_url ? normalizePublicUrl(values.canonical_url) : null,
     og_image: values.og_image || null,
   }).select("id").single();
 
@@ -172,7 +173,7 @@ export async function updateProduct(formData: FormData) {
     seo_title: values.seo_title || null,
     seo_description: values.seo_description || null,
     focus_keyword: values.focus_keyword || null,
-    canonical_url: values.canonical_url || null,
+    canonical_url: values.canonical_url ? normalizePublicUrl(values.canonical_url) : null,
     og_image: values.og_image || null,
   }).eq("id", id.data);
 
@@ -555,7 +556,10 @@ export async function createHomeCarouselSlide(formData: FormData) {
   const { supabase } = await requireAdmin();
   const parsed = readHomeCarouselSlideForm(formData);
   if (!parsed.success) redirect("/admin/home-carousel?error=invalid");
-  const { error } = await supabase.from("home_carousel_slides").insert(parsed.data);
+  const { error } = await supabase.from("home_carousel_slides").insert({
+    ...parsed.data,
+    destination_url: normalizePublicUrl(parsed.data.destination_url),
+  });
   if (error) {
     console.error("Admin could not create homepage carousel slide.", error);
     redirect("/admin/home-carousel?error=save");
@@ -570,7 +574,10 @@ export async function updateHomeCarouselSlide(formData: FormData) {
   const id = z.string().uuid().safeParse(formData.get("id"));
   const parsed = readHomeCarouselSlideForm(formData);
   if (!id.success || !parsed.success) redirect("/admin/home-carousel?error=invalid");
-  const { error } = await supabase.from("home_carousel_slides").update(parsed.data).eq("id", id.data);
+  const { error } = await supabase.from("home_carousel_slides").update({
+    ...parsed.data,
+    destination_url: normalizePublicUrl(parsed.data.destination_url),
+  }).eq("id", id.data);
   if (error) {
     console.error("Admin could not update homepage carousel slide.", error);
     redirect("/admin/home-carousel?error=save");
@@ -601,6 +608,7 @@ export async function createPromoCard(formData: FormData) {
   const { error } = await supabase.from("promo_cards").insert({
     ...parsed.data,
     description: parsed.data.description || null,
+    destination_url: normalizePublicUrl(parsed.data.destination_url),
   });
   if (error) {
     console.error("Admin could not create promo card.", error);
@@ -619,6 +627,7 @@ export async function updatePromoCard(formData: FormData) {
   const { error } = await supabase.from("promo_cards").update({
     ...parsed.data,
     description: parsed.data.description || null,
+    destination_url: normalizePublicUrl(parsed.data.destination_url),
   }).eq("id", id.data);
   if (error) {
     console.error("Admin could not update promo card.", error);
@@ -755,4 +764,161 @@ export async function deleteTestimonial(formData: FormData) {
   updateTag(storefrontContentCacheTags.home);
   revalidatePath("/");
   redirect("/admin/testimonials?success=deleted");
+}
+
+export async function createMemberTransaction(formData: FormData) {
+  const { supabase, user } = await requireAdmin();
+  const schema = z.object({
+    user_id: z.string().uuid(),
+    reference: z.string().trim().min(2).max(100),
+    purchase_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    gross_total: z.coerce.number().min(0).max(999999999999),
+    status: z.enum(["PENDING", "PAID"]),
+    source: z.enum(["ADMIN", "WEBSITE", "WHATSAPP"]),
+    product_name: z.string().trim().min(2).max(200),
+    sku: z.string().trim().max(100),
+    quantity: z.coerce.number().int().min(1).max(99),
+    unit_price: z.coerce.number().min(0).max(999999999999),
+    notes: z.string().trim().max(1000),
+  });
+  const parsed = schema.safeParse({
+    user_id: formData.get("user_id"),
+    reference: formData.get("reference"),
+    purchase_date: formData.get("purchase_date"),
+    gross_total: formData.get("gross_total"),
+    status: formData.get("status"),
+    source: formData.get("source"),
+    product_name: formData.get("product_name"),
+    sku: formData.get("sku") || "",
+    quantity: formData.get("quantity"),
+    unit_price: formData.get("unit_price"),
+    notes: formData.get("notes") || "",
+  });
+  if (!parsed.success) redirect("/admin/member-points?error=invalid");
+
+  const { data: transaction, error } = await supabase.from("member_transactions").insert({
+    user_id: parsed.data.user_id,
+    reference: parsed.data.reference,
+    purchase_date: parsed.data.purchase_date,
+    gross_total: parsed.data.gross_total,
+    status: "PENDING",
+    source: parsed.data.source,
+    notes: parsed.data.notes || null,
+    created_by: user.id,
+  }).select("id").single();
+  if (error || !transaction) {
+    console.error("Admin could not create member transaction.", error);
+    redirect("/admin/member-points?error=save");
+  }
+
+  const subtotal = parsed.data.unit_price * parsed.data.quantity;
+  const { error: itemError } = await supabase.from("member_transaction_items").insert({
+    transaction_id: transaction.id,
+    product_name: parsed.data.product_name,
+    sku: parsed.data.sku || null,
+    quantity: parsed.data.quantity,
+    unit_price: parsed.data.unit_price,
+    subtotal,
+  });
+  if (itemError) {
+    console.error("Admin could not create transaction item.", itemError);
+    redirect("/admin/member-points?error=save");
+  }
+
+  if (parsed.data.status === "PAID") {
+    const { error: completeError } = await supabase.rpc("complete_member_transaction", { p_transaction_id: transaction.id });
+    if (completeError) {
+      console.error("Admin could not complete member transaction.", completeError);
+      redirect("/admin/member-points?error=points");
+    }
+  }
+  revalidatePath("/akun");
+  redirect("/admin/member-points?success=created");
+}
+
+export async function completeMemberTransaction(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = z.string().uuid().safeParse(formData.get("id"));
+  if (!id.success) redirect("/admin/member-points?error=invalid");
+  const { error } = await supabase.rpc("complete_member_transaction", { p_transaction_id: id.data });
+  if (error) {
+    console.error("Member transaction could not be completed.", error);
+    redirect("/admin/member-points?error=points");
+  }
+  revalidatePath("/akun");
+  redirect("/admin/member-points?success=completed");
+}
+
+export async function cancelMemberTransaction(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = z.string().uuid().safeParse(formData.get("id"));
+  if (!id.success) redirect("/admin/member-points?error=invalid");
+  const { error } = await supabase.rpc("cancel_member_transaction", { p_transaction_id: id.data });
+  if (error) {
+    console.error("Member transaction could not be cancelled.", error);
+    redirect("/admin/member-points?error=points");
+  }
+  revalidatePath("/akun");
+  redirect("/admin/member-points?success=cancelled");
+}
+
+export async function adjustMemberPoints(formData: FormData) {
+  const { supabase, user } = await requireAdmin();
+  const schema = z.object({
+    user_id: z.string().uuid(),
+    points: z.coerce.number().int().min(-100000).max(100000),
+    description: z.string().trim().min(3).max(500),
+  });
+  const parsed = schema.safeParse({
+    user_id: formData.get("user_id"),
+    points: formData.get("points"),
+    description: formData.get("description"),
+  });
+  if (!parsed.success) redirect("/admin/member-points?error=invalid");
+
+  await supabase.rpc("ensure_member_point_account", { p_user_id: parsed.data.user_id });
+  const { data: account, error: accountError } = await supabase
+    .from("member_point_accounts").select("balance").eq("user_id", parsed.data.user_id).single();
+  if (accountError || !account) redirect("/admin/member-points?error=points");
+  const nextBalance = account.balance + parsed.data.points;
+  if (nextBalance < 0) redirect("/admin/member-points?error=insufficient");
+
+  const { error: balanceError } = await supabase
+    .from("member_point_accounts")
+    .update({ balance: nextBalance, updated_at: new Date().toISOString() })
+    .eq("user_id", parsed.data.user_id);
+  if (balanceError) redirect("/admin/member-points?error=points");
+
+  const { error: ledgerError } = await supabase.from("member_point_ledger").insert({
+    user_id: parsed.data.user_id,
+    ledger_type: "ADJUSTMENT",
+    points: parsed.data.points,
+    balance_before: account.balance,
+    balance_after: nextBalance,
+    description: parsed.data.description,
+    created_by: user.id,
+  });
+  if (ledgerError) {
+    console.error("Admin could not record point adjustment.", ledgerError);
+    redirect("/admin/member-points?error=points");
+  }
+  revalidatePath("/akun");
+  redirect("/admin/member-points?success=adjusted");
+}
+
+export async function updateMemberVoucher(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const id = z.string().uuid().safeParse(formData.get("id"));
+  const action = z.enum(["USE", "VOID"]).safeParse(formData.get("action"));
+  const reference = z.string().trim().max(100).safeParse(formData.get("reference") || "");
+  if (!id.success || !action.success || !reference.success) redirect("/admin/member-points?error=invalid");
+
+  const update: Partial<{ status: "USED" | "VOID"; used_at: string; used_reference: string | null }> =
+    action.data === "USE"
+      ? { status: "USED", used_at: new Date().toISOString(), used_reference: reference.data || null }
+      : { status: "VOID" };
+  const { error } = await supabase.from("member_vouchers").update(update).eq("id", id.data);
+  if (error) redirect("/admin/member-points?error=voucher");
+  revalidatePath("/akun");
+  redirect("/admin/member-points?success=voucher");
 }

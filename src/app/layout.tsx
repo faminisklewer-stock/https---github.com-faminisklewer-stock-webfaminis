@@ -4,6 +4,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteChrome } from "@/components/SiteChrome";
 import { CartProvider } from "@/components/cart/CartProvider";
+import { normalizePublicUrl } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -11,7 +12,7 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://faminisbarokah.my.id";
+const siteUrl = normalizePublicUrl(process.env.NEXT_PUBLIC_SITE_URL ?? "https://faminisbarokah.my.id");
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
