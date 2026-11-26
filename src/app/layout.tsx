@@ -16,11 +16,11 @@ const siteUrl = normalizePublicUrl(process.env.NEXT_PUBLIC_SITE_URL ?? "https://
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Faminis Barokah | Supplier Fashion Muslim Ecer & Grosir",
+    default: "Faminis Barokah | Supplier Mukena & Daster Solo",
     template: "%s | Faminis Barokah",
   },
   description:
-    "Faminis Barokah menyediakan daster, mukena, gamis, sarung dan fashion muslim pilihan untuk kebutuhan ecer maupun grosir.",
+    "Faminis Barokah adalah supplier mukena dan daster di Surakarta (Solo), melayani pembelian ecer dan grosir serta menyediakan pilihan oleh-oleh dari Kota Solo.",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",

@@ -23,7 +23,7 @@ export const getHomepageContent = unstable_cache(async () => {
   const [slidesResult, testimonialsResult] = await Promise.all([
     supabase
       .from("home_carousel_slides")
-      .select("id, title, image_url, destination_url")
+      .select("id, title, image_url")
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false }),

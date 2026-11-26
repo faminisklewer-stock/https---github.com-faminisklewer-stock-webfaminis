@@ -537,7 +537,6 @@ function readPromoCardForm(formData: FormData) {
 const homeCarouselSlideSchema = z.object({
   title: z.string().trim().min(2).max(160),
   image_url: promoImageUrl,
-  destination_url: promoDestinationUrl,
   sort_order: z.coerce.number().int().min(-100000).max(100000),
   is_active: z.boolean(),
 });
@@ -546,7 +545,6 @@ function readHomeCarouselSlideForm(formData: FormData) {
   return homeCarouselSlideSchema.safeParse({
     title: formData.get("title"),
     image_url: formData.get("image_url") || "",
-    destination_url: formData.get("destination_url"),
     sort_order: formData.get("sort_order"),
     is_active: formData.get("is_active") === "on",
   });
@@ -558,7 +556,7 @@ export async function createHomeCarouselSlide(formData: FormData) {
   if (!parsed.success) redirect("/admin/home-carousel?error=invalid");
   const { error } = await supabase.from("home_carousel_slides").insert({
     ...parsed.data,
-    destination_url: normalizePublicUrl(parsed.data.destination_url),
+    destination_url: normalizePublicUrl("/promo"),
   });
   if (error) {
     console.error("Admin could not create homepage carousel slide.", error);
@@ -576,7 +574,7 @@ export async function updateHomeCarouselSlide(formData: FormData) {
   if (!id.success || !parsed.success) redirect("/admin/home-carousel?error=invalid");
   const { error } = await supabase.from("home_carousel_slides").update({
     ...parsed.data,
-    destination_url: normalizePublicUrl(parsed.data.destination_url),
+    destination_url: normalizePublicUrl("/promo"),
   }).eq("id", id.data);
   if (error) {
     console.error("Admin could not update homepage carousel slide.", error);

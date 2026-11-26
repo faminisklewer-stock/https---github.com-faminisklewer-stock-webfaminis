@@ -3263,7 +3263,10 @@ a.contact-link-card:hover {
 }
 
 .site-footer .footer-main {
-  display: block;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, .9fr);
+  align-items: start;
+  gap: clamp(24px, 5vw, 64px);
   padding-bottom: 28px;
 }
 
@@ -3282,6 +3285,53 @@ a.contact-link-card:hover {
   font-style: normal;
   line-height: 1.6;
   overflow-wrap: anywhere;
+}
+
+.footer-channels h2 {
+  margin: 0 0 12px;
+  color: #fffaf3;
+  font-size: 15px;
+}
+
+.footer-channels ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 5px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer-channels a {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #f1e7db;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.footer-channels a:hover {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.footer-channel-icon {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  background: #fffaf3;
+}
+
+.footer-channel-icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 .site-footer .footer-bottom {
@@ -3392,6 +3442,11 @@ a.contact-link-card:hover {
     align-items: flex-start;
     flex-direction: column;
     gap: 13px;
+  }
+
+  .site-footer .footer-main {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
   }
 
   .site-footer .footer-bottom {

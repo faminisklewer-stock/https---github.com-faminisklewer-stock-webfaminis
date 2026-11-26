@@ -6,6 +6,27 @@ import { SeoJsonLd } from "@/components/SeoJsonLd";
 import { getCategoryBySlug, getProducts } from "@/lib/catalog";
 import { siteUrl } from "@/lib/site";
 
+const localCategorySeo: Record<string, { title: string; description: string; content: string }> = {
+  mukena: {
+    title: "Grosir Mukena Solo",
+    description:
+      "Cari supplier mukena di Solo? Faminis Barokah menyediakan pilihan mukena ecer dan grosir. Periksa harga, jumlah minimum, dan stok pada katalog.",
+    content:
+      "Faminis Barokah melayani pembelian mukena ecer dan grosir di Surakarta (Solo). Periksa jumlah minimum per produk dan konfirmasi stok kepada Admin.",
+  },
+  daster: {
+    title: "Grosir Daster Solo",
+    description:
+      "Cari supplier daster di Solo? Faminis Barokah menyediakan pilihan daster ecer dan grosir. Periksa harga, jumlah minimum, dan stok pada katalog.",
+    content:
+      "Faminis Barokah melayani pembelian daster ecer dan grosir di Surakarta (Solo). Periksa jumlah minimum per produk dan konfirmasi stok kepada Admin.",
+  },
+};
+
+function getCategoryTitle(category: { name: string; slug: string }) {
+  return localCategorySeo[category.slug]?.title ?? `${category.name} Ecer & Grosir`;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -15,8 +36,12 @@ export async function generateMetadata({
   const category = await getCategoryBySlug(slug);
   if (!category) return { title: "Kategori tidak ditemukan", robots: { index: false, follow: false } };
 
-  const title = category.seo_title || `${category.name} Ecer & Grosir`;
-  const description = category.seo_description || category.description || `Lihat koleksi ${category.name} dari Faminis Barokah untuk kebutuhan ecer dan grosir. Konfirmasi stok kepada Admin sebelum pembayaran.`;
+  const localSeo = localCategorySeo[category.slug];
+  const title = category.seo_title || getCategoryTitle(category);
+  const description = category.seo_description
+    || localSeo?.description
+    || category.description
+    || `Lihat koleksi ${category.name} dari Faminis Barokah untuk kebutuhan ecer dan grosir. Konfirmasi stok kepada Admin sebelum pembayaran.`;
   return {
     title,
     description,
@@ -35,7 +60,8 @@ export default async function CategoryPage({
   const category = await getCategoryBySlug(slug);
   if (!category) notFound();
   const products = await getProducts({ categorySlug: slug });
-  const title = `${category.name} Ecer & Grosir`;
+  const localSeo = localCategorySeo[category.slug];
+  const title = getCategoryTitle(category);
   const description = category.description || `Jelajahi pilihan ${category.name} Faminis Barokah. Tanyakan stok, motif, warna, dan ukuran sebelum melakukan pembayaran.`;
 
   const schema = [
@@ -66,6 +92,7 @@ export default async function CategoryPage({
         <p className="section-eyebrow">Kategori Faminis Barokah</p>
         <h1>{title}</h1>
         <p>{description}</p>
+        {localSeo ? <p>{localSeo.content}</p> : null}
         <p>Harga grosir dan jumlah minimum dapat berbeda untuk tiap produk. Stok fisik selalu dikonfirmasi Admin sebelum pembayaran.</p>
       </header>
       <ProductGrid

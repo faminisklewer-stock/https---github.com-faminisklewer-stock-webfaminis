@@ -17,7 +17,7 @@ export default async function AdminHomeCarouselPage({
   const { supabase } = await requireAdmin();
   const params = await searchParams;
   const { data: slides, error } = await supabase.from("home_carousel_slides")
-    .select("id, title, image_url, destination_url, sort_order, is_active")
+    .select("id, title, image_url, sort_order, is_active")
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: false })
     .limit(200);
@@ -47,7 +47,7 @@ export default async function AdminHomeCarouselPage({
       <AdminPageHeader
         eyebrow="Konten Beranda"
         title="Carousel Beranda"
-        description="Kelola slide untuk dua carousel Beranda. Daftar ini terpisah dari menu Promo dan halaman /promo."
+        description="Kelola slide Beranda. Saat dibuka, setiap slide mengarah ke halaman Promo."
       />
       <AdminFeedback searchParams={params} />
       <section className="admin-settings-panel admin-promo-create">
@@ -56,7 +56,6 @@ export default async function AdminHomeCarouselPage({
             <legend>Tambah slide Beranda</legend>
             <div className="field-grid">
               <label className="field-label">Judul slide<input name="title" required minLength={2} maxLength={160} /></label>
-              <label className="field-label">Tautan tujuan HTTPS<input name="destination_url" type="url" placeholder="https://..." required /></label>
               <label className="field-label">Urutan tampil<input name="sort_order" type="number" defaultValue={0} min={-100000} max={100000} required /></label>
             </div>
             <ImageUploader
@@ -93,7 +92,6 @@ export default async function AdminHomeCarouselPage({
                   <input type="hidden" name="id" value={slide.id} />
                   <div className="field-grid">
                     <label className="field-label">Judul slide<input name="title" defaultValue={slide.title} required minLength={2} maxLength={160} /></label>
-                    <label className="field-label">Tautan tujuan HTTPS<input name="destination_url" type="url" defaultValue={slide.destination_url} required /></label>
                     <label className="field-label">Urutan tampil<input name="sort_order" type="number" defaultValue={slide.sort_order} min={-100000} max={100000} required /></label>
                   </div>
                   <ImageUploader

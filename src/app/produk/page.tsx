@@ -6,11 +6,22 @@ import { ProductGrid } from "@/components/ProductGrid";
 import { siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Produk Fashion Muslim Ecer & Grosir",
-  description: "Cari daster, mukena, gamis, sarung, dan fashion muslim Faminis Barokah. Pilih produk ecer atau tanyakan opsi grosir kepada Admin.",
+  title: "Katalog Grosir Mukena & Daster Solo",
+  description:
+    "Jelajahi katalog supplier mukena dan daster Faminis Barokah di Solo. Pilih produk ecer atau grosir, lalu konfirmasi harga dan stok kepada Admin.",
   alternates: { canonical: "/produk" },
-  openGraph: { title: "Produk Fashion Muslim Ecer & Grosir", description: "Jelajahi katalog produk Faminis Barokah.", url: `${siteUrl}/produk` },
-  twitter: { card: "summary", title: "Produk Fashion Muslim Ecer & Grosir", description: "Jelajahi katalog produk Faminis Barokah." },
+  openGraph: {
+    title: "Katalog Grosir Mukena & Daster Solo | Faminis Barokah",
+    description:
+      "Jelajahi katalog supplier mukena dan daster Faminis Barokah di Solo untuk pembelian ecer maupun grosir.",
+    url: `${siteUrl}/produk`,
+  },
+  twitter: {
+    card: "summary",
+    title: "Katalog Grosir Mukena & Daster Solo | Faminis Barokah",
+    description:
+      "Jelajahi katalog supplier mukena dan daster Faminis Barokah di Solo untuk pembelian ecer maupun grosir.",
+  },
 };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;

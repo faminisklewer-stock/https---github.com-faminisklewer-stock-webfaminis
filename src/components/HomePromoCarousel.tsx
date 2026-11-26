@@ -1,14 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState, type KeyboardEvent, type TouchEvent } from "react";
-import { normalizePublicUrl } from "@/lib/site";
 
 export type HomePromoSlide = {
   id: string;
   title: string;
   imageUrl: string;
-  destinationUrl: string;
 };
 
 export function HomePromoCarousel({
@@ -97,11 +96,9 @@ export function HomePromoCarousel({
         aria-roledescription="slide"
         aria-label={`${activeIndex + 1} dari ${slides.length}: ${slide.title}`}
       >
-        <a
+        <Link
           className="home-promo-carousel-link"
-          href={normalizePublicUrl(slide.destinationUrl)}
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/promo"
           aria-label={`Buka ${slide.title}`}
         >
           <Image
@@ -115,7 +112,7 @@ export function HomePromoCarousel({
             <span className="home-promo-carousel-kicker">Faminis Barokah</span>
             <span className="home-promo-carousel-title">{slide.title}</span>
           </span>
-        </a>
+        </Link>
       </div>
     </div>
   );

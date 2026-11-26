@@ -7,7 +7,7 @@ import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 const adminLoginSchema = z.object({
   email: z.string().trim().email(),
-  password: z.string().min(6),
+  password: z.string().min(1),
 });
 
 export function AdminLoginForm({ redirectTo = "/admin" }: { redirectTo?: string }) {
@@ -58,11 +58,8 @@ export function AdminLoginForm({ redirectTo = "/admin" }: { redirectTo?: string 
           name="password"
           type="password"
           autoComplete="current-password"
-          minLength={6}
-          aria-describedby="admin-password-help"
           required
         />
-        <span className="auth-field-help" id="admin-password-help">Minimal 6 karakter.</span>
       </label>
       {error ? <p className="form-error" role="alert">{error}</p> : null}
       <button type="submit" className="button button-primary button-wide" disabled={busy}>

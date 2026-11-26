@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { BrandSymbol } from "@/components/BrandSymbol";
 import { CategoryCard } from "@/components/CategoryCard";
 import { CustomerTestimonials } from "@/components/CustomerTestimonials";
@@ -8,11 +9,30 @@ import { SeoJsonLd } from "@/components/SeoJsonLd";
 import { getCategories, getProducts } from "@/lib/catalog";
 import { getSiteSettings } from "@/lib/site-settings";
 import { getHomepageContent } from "@/lib/storefront-content";
-import { normalizePublicUrl, siteUrl } from "@/lib/site";
+import { siteUrl } from "@/lib/site";
 
 const categoryOrder = ["daster", "mukena", "sarung", "gamis", "setelan", "kaftan", "sajadah", "baju-koko"];
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: { absolute: "Grosir Mukena & Daster Solo | Faminis Barokah" },
+  description:
+    "Faminis Barokah, supplier mukena dan daster di Surakarta (Solo). Temukan pilihan ecer, grosir, dan fashion muslim untuk oleh-oleh dari Kota Solo.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    title: "Grosir Mukena & Daster Solo | Faminis Barokah",
+    description:
+      "Supplier mukena dan daster di Surakarta (Solo), melayani pembelian ecer dan grosir serta pilihan oleh-oleh dari Kota Solo.",
+    url: siteUrl,
+  },
+  twitter: {
+    card: "summary",
+    title: "Grosir Mukena & Daster Solo | Faminis Barokah",
+    description:
+      "Supplier mukena dan daster di Surakarta (Solo), melayani pembelian ecer dan grosir serta pilihan oleh-oleh dari Kota Solo.",
+  },
+};
 
 function BenefitIcon({ type }: { type: "garment" | "price" | "stock" | "support" }) {
   const paths = {
@@ -47,7 +67,6 @@ export default async function HomePage() {
       id: promo.id,
       title: promo.title,
       imageUrl: promo.image_url,
-      destinationUrl: normalizePublicUrl(promo.destination_url),
     }]
     : []);
   const promoLoadState = homepageContent.slidesError ? "error" : "ready";
@@ -59,14 +78,38 @@ export default async function HomePage() {
     const secondRank = categoryOrder.indexOf(second.slug);
     return (firstRank === -1 ? categoryOrder.length : firstRank) - (secondRank === -1 ? categoryOrder.length : secondRank);
   });
+  const socialProfiles = [
+    settings?.instagram_url,
+    settings?.tiktok_url,
+    settings?.facebook_url,
+  ].filter((profile): profile is string => Boolean(profile));
   const organization = {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": "ClothingStore",
+    "@id": `${siteUrl}#business`,
     name: "Faminis Barokah",
     url: siteUrl,
+    description:
+      "Supplier mukena dan daster di Surakarta (Solo), melayani pembelian ecer dan grosir.",
+    ...(settings?.phone ? { telephone: settings.phone } : {}),
+    ...(settings?.email ? { email: settings.email } : {}),
+    ...(settings?.shop_photo_url ? { image: settings.shop_photo_url } : {}),
+    ...(settings?.google_maps_url ? { hasMap: settings.google_maps_url } : {}),
+    ...(socialProfiles.length ? { sameAs: socialProfiles } : {}),
     address: settings?.address
-      ? { "@type": "PostalAddress", streetAddress: settings.address, addressLocality: "Surakarta", addressCountry: "ID" }
-      : { "@type": "PostalAddress", addressLocality: "Surakarta", addressCountry: "ID" },
+      ? {
+          "@type": "PostalAddress",
+          streetAddress: settings.address,
+          addressLocality: "Surakarta",
+          addressRegion: "Jawa Tengah",
+          addressCountry: "ID",
+        }
+      : {
+          "@type": "PostalAddress",
+          addressLocality: "Surakarta",
+          addressRegion: "Jawa Tengah",
+          addressCountry: "ID",
+        },
   };
   const website = {
     "@context": "https://schema.org",
@@ -74,6 +117,7 @@ export default async function HomePage() {
     name: "Faminis Barokah",
     url: siteUrl,
     inLanguage: "id-ID",
+    publisher: { "@id": `${siteUrl}#business` },
     potentialAction: {
       "@type": "SearchAction",
       target: `${siteUrl}/cari?q={search_term_string}`,
@@ -89,8 +133,9 @@ export default async function HomePage() {
             <p className="hero-kicker">Faminis Barokah</p>
             <h1 id="hero-title">Pusat Grosir &amp; Ecer Fashion Muslim</h1>
             <p className="hero-description">
-              Daster, mukena, sarung, gamis, dan beragam produk fashion muslim lainnya
-              untuk kebutuhan pribadi maupun usaha.
+              Temukan mukena dan daster ecer maupun grosir dari Faminis Barokah di
+              Surakarta (Solo). Tersedia juga sarung, gamis, dan fashion muslim untuk
+              pilihan oleh-oleh dari Kota Solo.
             </p>
             <div className="hero-actions">
               <Link className="button button-primary" href="/produk">Lihat katalog</Link>
